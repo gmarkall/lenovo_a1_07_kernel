@@ -1,0 +1,423 @@
+comment "OMAP Core Type"
+	depends on ARCH_OMAP2
+
+config ARCH_OMAP2420
+	bool "OMAP2420 support"
+	depends on ARCH_OMAP2
+	select OMAP_DM_TIMER
+	select ARCH_OMAP_OTG
+
+config ARCH_OMAP2430
+	bool "OMAP2430 support"
+	depends on ARCH_OMAP2
+	select ARCH_OMAP_OTG
+
+config ARCH_OMAP34XX
+	bool "OMAP34xx Based System"
+	depends on ARCH_OMAP3
+	select USB_ARCH_HAS_EHCI
+
+config ARCH_OMAP3430
+	bool "OMAP3430 support"
+	depends on ARCH_OMAP3 && ARCH_OMAP34XX
+	select ARCH_OMAP_OTG
+
+config ARCH_OMAP3621
+	bool "OMAP3621 support"
+	depends on ARCH_OMAP3 && ARCH_OMAP34XX
+
+config LOW_BATTERY_HANDLE
+	bool "low battery support"
+	help
+	  Select low battery handle support
+
+config OMAP_PACKAGE_CBC
+       bool
+
+config OMAP_PACKAGE_CBB
+       bool
+
+config OMAP_PACKAGE_CUS
+       bool
+
+config OMAP_PACKAGE_CBP
+       bool
+
+comment "OMAP Board Type"
+	depends on ARCH_OMAP2PLUS
+
+config MACH_OMAP_GENERIC
+	bool "Generic OMAP board"
+	depends on ARCH_OMAP2
+
+config MACH_OMAP2_TUSB6010
+	bool
+	depends on ARCH_OMAP2 && ARCH_OMAP2420
+	default y if MACH_NOKIA_N8X0
+
+config MACH_OMAP_H4
+	bool "OMAP 2420 H4 board"
+	depends on ARCH_OMAP2
+	select OMAP_DEBUG_DEVICES
+
+config MACH_OMAP_APOLLON
+	bool "OMAP 2420 Apollon board"
+	depends on ARCH_OMAP2
+
+config MACH_OMAP_2430SDP
+	bool "OMAP 2430 SDP board"
+	depends on ARCH_OMAP2
+
+config MACH_OMAP3_BEAGLE
+	bool "OMAP3 BEAGLE board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_DEVKIT8000
+	bool "DEVKIT8000 board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CUS
+	select OMAP_MUX
+
+config MACH_OMAP_LDP
+	bool "OMAP3 LDP board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_OVERO
+	bool "Gumstix Overo board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_OMAP3EVM
+	bool "OMAP 3530 EVM board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config WIFI_CONTROL_FUNC
+        bool "Enable WiFi control function abstraction"
+	depends on MACH_OMAP_4430SDP || MACH_OMAP_ZOOM2 || MACH_OMAP_ZOOM3 || MACH_OMAP3621_EVT1A
+        select WIRELESS_EXT
+        select WEXT_CORE
+        select WEXT_PROC
+        select WEXT_PRIV
+        default Y
+        help
+           Enables Power/Reset/Carddetect function abstraction
+config TIWLAN_SDIO
+        bool "TI WLAN Enhanced SDIO Controller support"
+        depends on MMC_OMAP || MMC_OMAP_MODULE || MMC_OMAP_HS || MMC_OMAP_HS_MODULE
+        help
+           Say Y here if you want to be able to use TI's WLAN device using the
+           SDIO interface. If unsure, say N.
+config TIWLAN_MMC_CONTROLLER
+        int "MMC Controller number that TI WLAN chip is connected to"
+        range 1 5
+        depends on TIWLAN_SDIO
+        default "5"
+        help
+          Choose the number of the MMC controller that TI WLAN chip is
+          connected to. TI WLAN has SDIO host controller that will control
+          this MMC port.
+
+config MACH_OMAP3517EVM
+	bool "OMAP3517/ AM3517 EVM board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_OMAP3_PANDORA
+	bool "OMAP3 Pandora"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_OMAP3_TOUCHBOOK
+	bool "OMAP3 Touch Book"
+	depends on ARCH_OMAP3
+	select BACKLIGHT_CLASS_DEVICE
+
+
+config MMC_OMAP_CONSISTENT_NAMES
+    bool "Consistent naming of MMC devices"
+    depends on MMC_OMAP || MMC_OMAP_MODULE || MMC_OMAP_HS || MMC_OMAP_HS_MODULE
+    default "n"
+
+    help
+        Say Y here if you want the internal and external SD/MMC devices to
+        have dependable device names on every boot. When N, the internal MMC
+        will be called either mmcblk0 or mmcblk1 depending on whether or not
+        an external card is present. If unsure, say Y.
+
+config MACH_OMAP_3430SDP
+	bool "OMAP 3430 SDP board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_NOKIA_N800
+       bool
+
+config MACH_NOKIA_N810
+       bool
+
+config MACH_NOKIA_N810_WIMAX
+       bool
+
+config MACH_NOKIA_N8X0
+	bool "Nokia N800/N810"
+	depends on ARCH_OMAP2420
+	select MACH_NOKIA_N800
+	select MACH_NOKIA_N810
+	select MACH_NOKIA_N810_WIMAX
+
+config MACH_NOKIA_RX51
+	bool "Nokia RX-51 board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_OMAP_ZOOM2
+	bool "OMAP3 Zoom2 board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+	select SERIAL_8250
+	select SERIAL_CORE_CONSOLE
+	select SERIAL_8250_CONSOLE
+
+config MACH_OMAP_ZOOM3
+	bool "OMAP3630 Zoom3 board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBP
+	select SERIAL_8250
+	select SERIAL_CORE_CONSOLE
+	select SERIAL_8250_CONSOLE
+
+config CL1_DVT_BOARD
+	bool "CONFIG CL1 DVT board"
+	default y
+	
+config CL1_3G_BOARD
+	bool "CONFIG CL1 3G board"
+	default n
+	help
+	if you want compile for CL1 3g board please
+	choose this item,or don't select it
+	default,this item is not select
+	
+config MACH_OMAP3621_EVT1A
+	bool "OMAP3621 BOXER board revision EVT1A"
+	depends on ARCH_OMAP3 && ARCH_OMAP34XX
+	select ARCH_OMAP3621
+
+config WLAN_POWER_EVT1
+	bool "WLAN power support"
+	depends on MACH_OMAP3621_EVT1A
+	default "y"
+	help
+	  Has to be set for EVT1A board.
+
+choice
+	bool "SDRAM DDR memory"
+	depends on ARCH_OMAP3 && ARCH_OMAP34XX
+
+config MACH_SDRAM_HYNIX_H8MBX00U0MER0EM_OR_SAMSUNG_K4X4G303PB
+	bool "Hynix H8MBX00U0MER0EM DDR memory"
+
+config MACH_SDRAM_HYNIX_H8MBX00U0MER0EM
+	bool "Hynix H8MBX00U0MER0EM DDR memory"
+
+config MACH_SDRAM_SAMSUNG_K4X4G303PB
+	bool "Saumsung K4X4G303PB DDR memory"
+
+#&*&*&*SJ1_20110422
+config MACH_SDRAM_ELPIDA_EDK4332C2PB
+	bool "ELPIDA Pop EDK4332C2PB DDR memory"
+#&*&*&*SJ2_20110422
+	
+endchoice
+
+config MACH_CM_T35
+	bool "CompuLab CM-T35 module"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CUS
+	select OMAP_MUX
+
+config MACH_IGEP0020
+	bool "IGEP v2 board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBB
+
+config MACH_SBC3530
+	bool "OMAP3 SBC STALKER board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CUS
+	select OMAP_MUX
+
+config MACH_OMAP_3630SDP
+	bool "OMAP3630 SDP board"
+	depends on ARCH_OMAP3
+	select OMAP_PACKAGE_CBP
+
+config OMAP4_ES1
+	bool "OMAP 4430 ES1.0"
+	depends on ARCH_OMAP4
+	select PL310_ERRATA_588369
+	select ERRATA_OMAP4_AXI2OCP
+	help
+	Say Y if using OMAP4430 ES1.0 samples
+
+config MACH_OMAP_4430SDP
+	bool "OMAP 4430 SDP board"
+	depends on ARCH_OMAP4
+	select HIGHMEM
+	select TWL6030_PWM
+	select TWL6030_GPADC
+	select TWL6040_VIB if ANDROID_TIMED_OUTPUT && TWL6040_CODEC
+	select NEW_LEDS
+	select LEDS_CLASS
+	select LEDS_PWM
+	select LEDS_GPIO
+	select LEDS_GPIO_PLATFORM
+	select LEDS_OMAP4430_SDP_DISPLAY
+	select LEDS_OMAP4430_SDP_KEYPAD
+	select LEDS_TRIGGERS
+	select LEDS_TRIGGER_TIMER
+	select INPUT_CMA3000_I2C
+#	select SENSORS_BH1780
+	select INPUT_BH1780
+	select MISC_DEVICES
+#	select BMP085
+	select INPUT_BMP085
+	select STAGING
+	select IIO
+#	select SENSORS_HMC5843
+	select INPUT_HMC5843
+	select INPUT_SFH7741
+	select HWMON
+#	select SENSORS_LM75
+	select INPUT_MISC
+	select INPUT_KEYBOARD
+	select INPUT_TOUCHSCREEN
+	select TOUCHSCREEN_SYNTM12XX
+	select POWER_SUPPLY
+	select TWL6030_BCI_BATTERY
+	select CHARGER_BQ2415x
+	select SECURITY_MIDDLEWARE_COMPONENT
+	select CDC_TCXO
+
+config MACH_OMAP4_PANDA
+	bool "OMAP4 based Panda board"
+	depends on ARCH_OMAP4
+
+config ERRATA_OMAP4_AXI2OCP
+	bool "OMAP 4430 axi2ocp errata workaround"
+	depends on ARCH_OMAP4
+	help
+	Pending response counter logic is incorrectly implemented
+	It decrements by only 1 even when there are 2+ responses in the
+	same cycle. If 2 MCMDs send out bridge at the same time counter
+	increments by.1 but when it decrement for 2 responses counter does
+	not go beyond 0.
+	Work-around:
+	Any new request before timer max out resets the timer. With this hang
+	issue will not happen.
+
+config OMAP3_EMU
+	bool "OMAP3 debugging peripherals"
+	depends on ARCH_OMAP3
+	select OC_ETM
+	help
+	  Say Y here to enable debugging hardware of omap3
+
+config OMAP3_SDRC_AC_TIMING
+	bool "Enable SDRC AC timing register changes"
+	depends on ARCH_OMAP3
+	default n
+	help
+	  If you know that none of your system initiators will attempt to
+	  access SDRAM during CORE DVFS, select Y here.  This should boost
+	  SDRAM performance at lower CORE OPPs.  There are relatively few
+	  users who will wish to say yes at this point - almost everyone will
+	  wish to say no.  Selecting yes without understanding what is
+	  going on could result in system crashes;
+
+config INTERCONNECT_IO_POSTING
+	bool "Enable bus posting for PIO accesses"
+	depends on ARCH_OMAP34XX || ARCH_OMAP4
+	default n
+	---help---
+	This option sets PIO access for internal OMAP3 registers to follow the
+	ARMv7 DEVICE attribute. For 3430 this will allow posted writes in the
+	interconnect. Software will need to synchronize writes to ensure
+	completion. When not set the attribute is Strongly Ordered which is
+	non-posted on the OMAP3 interconnect.
+
+config ENABLE_L3_ERRORS
+	bool  "Enable L3 error logging"
+	depends on ARCH_OMAP4
+	default y
+	help
+	  Select this option to enable L3 error detection on OMAP4
+
+config OMAP_ALLOW_OSWR
+	bool  "Enable Open Switch Retention"
+	depends on ARCH_OMAP4
+	default n
+	help
+	  Select this option to enable OSWR support.
+	  Which means the Logic of power domains can be lost now
+	  unlike the CSWR wherein the logic is retained
+
+config OMAP4_PMD_CLKS_ENABLE
+	bool "Enable debug clocks (trace & STM)"
+	depends on ARCH_OMAP4
+	default n
+	help
+	  Select this option to enable l3_instr_ick, l3_main_3_ick and
+	  ocp_wp_noc_ick at boot-time, which are needed for debugging on OMAP4.
+	  Even without this option set it is possible to enable these clocks
+	  at run-time via debugfs.
+
+config OMAP4_KEEP_STATIC_DEPENDENCIES
+	bool "Keep OMAP4 Static dependencies"
+	depends on ARCH_OMAP4
+	default n
+	help
+	  Select this option to keep the static dependency mapping for OMAP4.
+
+config PANEL_PORTRAIT
+  bool "OMAP3621 Panel portrait"
+	depends on ARCH_OMAP3
+	default n
+	help
+	  Say Y here to enable panel portrait
+
+config PANEL_PORTRAIT_REVERSED
+  bool "OMAP3621 Panel portrait reversed"
+	depends on ARCH_OMAP3
+	default n
+	help
+	  Say Y here to enable panel portrait reversed
+	  
+config PANEL_LANDSCAPE
+  bool "OMAP3621 Panel landscape"
+	depends on ARCH_OMAP3
+	default n
+	help
+	  Say Y here to enable panel landscape
+	  
+config PANEL_LANDSCAPE_REVERSED
+  bool "OMAP3621 Panel landscape reversed"
+	depends on ARCH_OMAP3
+	default n
+	help
+	  Say Y here to enable panel landscape reversed
+	  
+##&*&*&*SJ1_20110419, Add /proc file to display software and hardware version.
+config PROCFS_DISPLAY_SW_HW_VERSION
+	bool "Implement /proc file to display software and hardware version info." 
+	default n
+##&*&*&*SJ2_20110419, Add /proc file to display software and hardware version.
+
+config CONSOLE_SILENT
+	bool "Disable all log messages."
+	default n
+	help
+	  The configuration to disable kernel log message 

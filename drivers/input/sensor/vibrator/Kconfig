@@ -1,0 +1,16 @@
+menuconfig VIBRATOR
+	bool "VIBRATOR support"
+	default y
+	help
+	  support the use of vibrator
+
+if VIBRATOR
+
+config CL1_VIBRATOR
+	bool "CL1 vibrator support"
+	depends on VIBRATOR
+	default y
+	help
+	  support for vibrator
+
+endif

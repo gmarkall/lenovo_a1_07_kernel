@@ -1,0 +1,3 @@
+obj-$(CONFIG_BATTERY_MAX17043)	+= max17043_battery.o
+obj-$(CONFIG_BATTERY_MAX17043)  += max17043_custom_model.o
+obj-$(CONFIG_BATTERY_MAX17043_TEMPERATURE_PROTECTION)	+= max17043-temp-regmap.o

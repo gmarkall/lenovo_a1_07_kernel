@@ -1,0 +1,878 @@
+/*
+ * mt9v115_regs.h
+ *
+ * Register definitions for the MT9V115 Sensor.
+ *
+ * Leverage MT9P012.h
+ *
+ * Copyright (C) 2008 Hewlett Packard.
+ *
+ * This file is licensed under the terms of the GNU General Public License
+ * version 2. This program is licensed "as is" without any warranty of any
+ * kind, whether express or implied.
+ */
+
+#ifndef MT9V115_REGS_H
+#define MT9V115_REGS_H
+
+#define MT9V115_REG_TURN	0
+
+/* The ID values we are looking for */
+#define MT9V115_MOD_ID			0x2284	/* chip ID */
+
+#define cmp_eq	0	// ==
+#define cmp_ne	1	// !=
+#define cmp_lt	2	// <
+#define cmp_le	3	// <=
+#define cmp_bt	4	// >
+#define cmp_be	5	// >=
+
+/* MT9V115 has 8/16/32 I2C registers */
+#define I2C_8BIT			1 << 0
+#define I2C_16BIT			1 << 1
+#define I2C_32BIT			1 << 2
+#define I2C_DELAY			1 << 3
+#define I2C_8BIT_BF			1 << 4
+#define I2C_16BIT_BF		1 << 5
+#define I2C_8BIT_PR0		1 << 6
+#define I2C_8BIT_PR1		1 << 7
+#define I2C_16BIT_PR0		1 << 8
+#define I2C_16BIT_PR1		1 << 9
+
+/* Terminating list entry for reg */
+#define I2C_REG_TERM		0xFFFF
+/* Terminating list entry for val */
+#define I2C_VAL_TERM		0xFFFFFFFF
+/* Terminating list entry for len */
+#define I2C_LEN_TERM		0xFFFF
+
+/* CSI2 Virtual ID */
+#define MT9V115_CSI2_VIRTUAL_ID	0x0
+
+/* Used registers */
+#define MT9V115_REG_MODEL_ID			0x0000
+#define MT9V115_REG_SW_RESET			0x001A
+
+
+
+/*
+ * The nominal xclk input frequency of the MT9V115 is 24MHz, maximum
+ * frequency is 54MHz, and minimum frequency is 6MHz.
+ */
+#define MT9V115_XCLK_MIN   	4000000
+#define MT9V115_XCLK_MAX   	44000000
+#define MT9V115_XCLK_NOM_1 	24000000
+#define MT9V115_XCLK_NOM_2 	24000000
+
+/* FPS Capabilities */
+#define MT9V115_MIN_FPS		7
+#define MT9V115_DEF_FPS		15
+#define MT9V115_MAX_FPS		30
+
+#define I2C_RETRY_COUNT		5
+
+/* Still capture 0.3 MP */
+#define MT9V115_IMAGE_WIDTH_MAX		640
+#define MT9V115_IMAGE_HEIGHT_MAX	480
+
+/* Analog gain values */
+#define MT9V115_EV_MIN_GAIN		0
+#define MT9V115_EV_MAX_GAIN		30
+#define MT9V115_EV_DEF_GAIN		21
+#define MT9V115_EV_GAIN_STEP		1
+/* maximum index in the gain EVT */
+#define MT9V115_EV_TABLE_GAIN_MAX	30
+
+/* Exposure time values */
+#define MT9V115_MIN_EXPOSURE		-35
+#define MT9V115_MAX_EXPOSURE		35
+#define MT9V115_DEF_EXPOSURE	    0
+#define MT9V115_EXPOSURE_STEP	5
+
+/* Test Pattern Values */
+#define MT9V115_MIN_TEST_PATT_MODE	0
+#define MT9V115_MAX_TEST_PATT_MODE	4
+#define MT9V115_MODE_TEST_PATT_STEP	1
+
+#define MT9V115_TEST_PATT_SOLID_COLOR 	1
+#define MT9V115_TEST_PATT_COLOR_BAR	2
+#define MT9V115_TEST_PATT_PN9		4 
+
+/* Effect Values */
+#define MT9V115_MIN_EFFECT	0
+#define MT9V115_MAX_EFFECT	4
+#define MT9V115_EFFECT_STEP	1
+#define MT9V115_DEF_EFFECT	0
+#define	V4L2_COLORFX_NEGATIVE	3
+#define	V4L2_COLORFX_SOLARIZE	4
+
+/* White Balance Values */
+#define MT9V115_MIN_WB		0
+#define MT9V115_MAX_WB		7
+#define MT9V115_WB_STEP		1
+#define MT9V115_DEF_WB		0
+#define WHITE_BALANCE_AUTO		0
+#define WHITE_BALANCE_INCANDESCENT	1
+#define WHITE_BALANCE_FLUORESCENT	2
+#define WHITE_BALANCE_DAYLIGHT		3
+#define WHITE_BALANCE_SHADE		4
+#define WHITE_BALANCE_CLOUDY_DAYLIGHT	5
+#define WHITE_BALANCE_HORIZON		6
+#define WHITE_BALANCE_TUNGSTEN		7
+
+/* Brightness Values */
+#define MT9V115_MIN_BR		0
+#define MT9V115_MAX_BR		64
+#define MT9V115_BR_STEP		1
+#define MT9V115_DEF_BR		32
+
+/* Antibanding Values */
+#define MT9V115_MIN_BANDING	0
+#define MT9V115_MAX_BANDING	2
+#define MT9V115_BANDING_STEP	1
+#define MT9V115_DEF_BANDING	0
+
+#define MT9V115_MAX_FRAME_LENGTH_LINES	0xFFFF
+
+#define SENSOR_DETECTED		1
+#define SENSOR_NOT_DETECTED	0
+
+/**
+ * struct mt9v115_reg - mt9v115 register format
+ * @reg: 16-bit offset to register
+ * @val: 8/16/32-bit register value
+ * @length: length of the register
+ *
+ * Define a structure for MT9V115 register initialization values
+ */
+struct mt9v115_reg {
+	u16 	reg;
+	u32 	val;
+	u16	length;
+};
+
+/**
+ * sensor command
+ * 1. 32bit reg command: {reg_addr, reg_val, I2C_32BIT}
+ * 2. 16bit reg command: {reg_addr, reg_val, I2C_16BIT}
+ * 3. 8bit reg command: {reg_addr, reg_val, I2C_8BIT}
+ * 4. delay command: {0x0000, delay_val, I2C_DELAY}
+ * 5. 16bit reg bitfield command: {reg_addr, (mask << 16) | (val & 0xffff), I2C_16BIT_BF}
+ * 6. 8bit reg bitfield command: {reg_addr, (mask << 16) | (val & 0xffff), I2C_8BIT_BF}
+ * 7. 16bit reg poll command: {reg_addr, (mask << 16) | (val & 0xffff), I2C_16BIT_PR0}
+ *                            {condition, (delay << 16) | (timout & 0xffff), I2C_16BIT_PR1}
+ * 8. 8bit reg poll command: {reg_addr, (mask << 16) | (val & 0xffff), I2C_8BIT_PR0}
+ *                            {condition, (delay << 16) | (timeout & 0xffff), I2C_8BIT_PR1}
+ */
+
+/**
+ * struct struct clk_settings - struct for storage of sensor
+ * clock settings
+ */
+struct mt9v115_clk_settings {
+	u16	pre_pll_div;
+	u16	pll_mult;
+	u16	post_pll_div;
+	u16	vt_pix_clk_div;
+	u16	vt_sys_clk_div;
+};
+
+/**
+ * struct struct mipi_settings - struct for storage of sensor
+ * mipi settings
+ */
+struct mt9v115_mipi_settings {
+	u16	data_lanes;
+	u16	ths_prepare;
+	u16	ths_zero;
+	u16	ths_settle_lower;
+	u16	ths_settle_upper;
+};
+
+/**
+ * struct struct frame_settings - struct for storage of sensor
+ * frame settings
+ */
+struct mt9v115_frame_settings {
+	u16	frame_len_lines_min;
+	u16	frame_len_lines;
+	u16	line_len_pck;
+	u16	x_addr_start;
+	u16	x_addr_end;
+	u16	y_addr_start;
+	u16	y_addr_end;
+	u16	x_output_size;
+	u16	y_output_size;
+	u16	x_even_inc;
+	u16	x_odd_inc;
+	u16	y_even_inc;
+	u16	y_odd_inc;
+	u16	v_mode_add;
+	u16	h_mode_add;
+	u16	h_add_ave;
+	u16	context;//Context: 1=A;2=B
+};
+
+/**
+ * struct struct mt9v115_sensor_settings - struct for storage of
+ * sensor settings.
+ */
+struct mt9v115_sensor_settings {
+	struct mt9v115_clk_settings clk;
+	struct mt9v115_mipi_settings mipi;
+	struct mt9v115_frame_settings frame;
+};
+
+/**
+ * struct struct mt9v115_clock_freq - struct for storage of sensor
+ * clock frequencies
+ */
+struct mt9v115_clock_freq {
+	u32 vco_clk;
+	u32 mipi_clk;
+	u32 ddr_clk;
+	u32 vt_pix_clk;
+};
+
+/* Effect Settings */
+const static struct mt9v115_reg colorfx_none[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0xA010, 0x00, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg colorfx_bw[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0xA010, 0x01, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg colorfx_sepia[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0xA010, 0x02, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg colorfx_negative[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0xA010, 0x03, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg colorfx_solarize[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0xA010, 0x04, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+/* White Balance settings */
+const static struct mt9v115_reg wb_auto[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0x9401, 0x0D, I2C_8BIT}, // AWB_MODE AUTO
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg wb_incandescent[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0x9436, 0x6B, I2C_8BIT}, 	// AWB_R_RATIO_PRE_AWB
+	{0x9437, 0x2D, I2C_8BIT},	// AWB_B_RATIO_PRE_AWB
+	{0x9401, 0x0C, I2C_8BIT}, // AWB_MODE MANUAL
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg wb_fluorescent[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0x9436, 0x4D, I2C_8BIT}, 	// AWB_R_RATIO_PRE_AWB
+	{0x9437, 0x3C, I2C_8BIT},	// AWB_B_RATIO_PRE_AWB
+	{0x9401, 0x0C, I2C_8BIT}, // AWB_MODE MANUAL
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg wb_daylight[] = {
+	{0x098E, 0xA010, I2C_16BIT},
+	{0x9436, 0x42, I2C_8BIT}, 	// AWB_R_RATIO_PRE_AWB
+	{0x9437, 0x56, I2C_8BIT},	// AWB_B_RATIO_PRE_AWB
+	{0x9401, 0x0C, I2C_8BIT}, 	// AWB_MODE MANUAL
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+/* Antibanding Settings */
+const static struct mt9v115_reg flicker_off[] = {
+	{0x098E, 0x8C00, I2C_16BIT},
+	{0x8C00, 0x02, I2C_8BIT},
+	{0x8C01, 0x01, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg flicker_50hz[] = {
+	{0x098E, 0x8C00, I2C_16BIT},
+	{0x8C00, 0x02, I2C_8BIT},
+	{0x8C01, 0x01, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+const static struct mt9v115_reg flicker_60hz[] = {
+	{0x098E, 0x8C00, I2C_16BIT},
+	{0x8C00, 0x02, I2C_8BIT},
+	{0x8C01, 0x00, I2C_8BIT},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}  
+};
+const static struct mt9v115_reg enter_standby[] = {
+	/* Stop preview. */
+	{0x098E, 0x9401, I2C_16BIT},
+	{0x9401, 0x0c, I2C_8BIT},
+	/* Initiate standby mode. */
+	{0x0018, 0x00010001, I2C_16BIT_BF},
+	/* Wait for sensor enter standby mode. */
+ 	{0x0018, 0x40000001, I2C_16BIT_PR0},
+	{0x0001, 0x000A00c8, I2C_16BIT_PR1},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}  
+};
+
+const static struct mt9v115_reg exit_standby[] = {
+	/* Turn on internal clocks. */
+ 	{0x0018, 0x00010000, I2C_16BIT_BF},
+	/* Wait for sensor exit standby mode. */
+ 	{0x0018, 0x40000000, I2C_16BIT_PR0},
+	{0x0001, 0x000A00c8, I2C_16BIT_PR1},
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}  
+};
+
+
+#if MT9V115_REG_TURN
+static struct mt9v115_reg initial_list[1024] = {
+#else
+const static struct mt9v115_reg initial_list[] = {
+#endif
+	/* This is for simple test. */
+	
+/*	{0x0010, 0x0720, I2C_16BIT},   //m=32, n=7
+	{0x0012, 0x0200, I2C_16BIT},   //p3=2
+	{0x0018, 0x4503, I2C_16BIT},   //Disable FW PLL Start
+	{0x0014, 0x2047, I2C_16BIT},   //Ensure PLL Enable
+	{0x0042, 0xFFFB, I2C_16BIT},   //OTPM IO Mode Override Disable
+	{0x0042, 0xFFF3, I2C_16BIT},   //OTPM IO Mode Override Select
+	{0x3C00, 0x5004, I2C_16BIT},   //TX Control, SOC ON
+	{0x0018, 0x0000, I2C_16BIT},   //Out of Standby
+                             
+    {0x0000, 0x0064, I2C_DELAY},//Delay 100 ms Here
+	*/
+
+//
+// Register Log created on Monday, May 30, 2011 : 15:13:10
+//
+//[[Register Log 05/30/11 15:13:02]]
+
+   	{0x001A, 0x0566, I2C_16BIT},   	   	
+   	{0x0000, 0x0032, I2C_DELAY},   	   	
+   	{0x0010, 0x052c, I2C_16BIT},
+   	{0x0012, 0x0600, I2C_16BIT},
+   	{0x0018, 0x4506, I2C_16BIT},
+   	{0x0000, 0x0032, I2C_DELAY},
+   	{0x0018, 0x4500, I2C_16BIT},
+   	{0x0042, 0xfff3, I2C_16BIT}, 
+   		
+   //	{0x3c00, 0x5004, I2C_16BIT},
+  	{0x0018, 0x0006, I2C_16BIT},        
+   	{0x001a, 0x0520, I2C_16BIT},
+	{0x001a, 0x0564, I2C_16BIT},  	
+   	{0x0000, 0x00c8, I2C_DELAY},  	
+   	{0x0012, 0x0200, I2C_16BIT},
+   	
+   	
+	{0x300A, 0x01F9, I2C_16BIT}, 	// FRAME_LENGTH_LINES
+	{0x300C, 0x02D6, I2C_16BIT}, 	// LINE_LENGTH_PCK
+	{0x3010, 0x0012, I2C_16BIT}, 	// FINE_CORRECTION
+	{0x3040, 0x4041, I2C_16BIT},
+
+	{0x098E, 0x9803, I2C_16BIT},
+	{0x9803, 0x07, I2C_8BIT},    	// STAT_FD_ZONE_HEIGHT
+	
+	{0xA06E, 0x0098, I2C_16BIT}, 	// CAM_FD_CONFIG_FDPERIOD_50HZ
+	{0xA070, 0x007E, I2C_16BIT}, 	// CAM_FD_CONFIG_FDPERIOD_60HZ
+	{0xA072, 0x11, I2C_8BIT}, 	        // CAM_FD_CONFIG_SEARCH_F1_50
+	{0xA073, 0x13, I2C_8BIT}, 	        // CAM_FD_CONFIG_SEARCH_F2_50
+	{0xA074, 0x14, I2C_8BIT}, 	        // CAM_FD_CONFIG_SEARCH_F1_60
+	{0xA075, 0x16, I2C_8BIT}, 	        // CAM_FD_CONFIG_SEARCH_F2_60
+	{0xA076, 0x000d, I2C_16BIT}, 	// CAM_FD_CONFIG_MAX_FDZONE_50HZ
+	{0xA078, 0x0010, I2C_16BIT}, 	// CAM_FD_CONFIG_MAX_FDZONE_60HZ
+	{0xA01A, 0x000d, I2C_16BIT}, 	// CAM_AE_CONFIG_TARGET_FDZONE
+	
+	{0x3168, 0x84F8, I2C_16BIT}, 	// RESERVED_CORE_3168
+	{0x316A, 0x028A, I2C_16BIT}, 	// RESERVED_CORE_316A
+	{0x316C, 0xB477, I2C_16BIT}, 	// RESERVED_CORE_316C
+	{0x316E, 0x828A, I2C_16BIT}, 	// RESERVED_CORE_316E
+	{0x3180, 0x87FF, I2C_16BIT}, 	// RESERVED_CORE_3180
+	{0x3E02, 0x0600, I2C_16BIT}, 	// RESERVED_CORE_3E02
+	{0x3E04, 0x221C, I2C_16BIT}, 	// RESERVED_CORE_3E04
+	{0x3E06, 0x3632, I2C_16BIT}, 	// RESERVED_CORE_3E06
+	{0x3E08, 0x3204, I2C_16BIT}, 	// RESERVED_CORE_3E08
+	{0x3E0A, 0x3106, I2C_16BIT}, 	// RESERVED_CORE_3E0A
+	{0x3E0C, 0x3025, I2C_16BIT}, 	// RESERVED_CORE_3E0C
+	{0x3E0E, 0x190B, I2C_16BIT}, 	// RESERVED_CORE_3E0E
+	{0x3E10, 0x0700, I2C_16BIT}, 	// RESERVED_CORE_3E10
+	{0x3E12, 0x24FF, I2C_16BIT}, 	// RESERVED_CORE_3E12
+	{0x3E14, 0x3731, I2C_16BIT}, 	// RESERVED_CORE_3E14
+	{0x3E16, 0x0401, I2C_16BIT}, 	// RESERVED_CORE_3E16
+	{0x3E18, 0x211E, I2C_16BIT}, 	// RESERVED_CORE_3E18
+	{0x3E1A, 0x3633, I2C_16BIT}, 	// RESERVED_CORE_3E1A
+	{0x3E1C, 0x3107, I2C_16BIT}, 	// RESERVED_CORE_3E1C
+	{0x3E1E, 0x1A16, I2C_16BIT}, 	// RESERVED_CORE_3E1E
+	{0x3E20, 0x312D, I2C_16BIT}, 	// RESERVED_CORE_3E20
+	{0x3E22, 0x3303, I2C_16BIT}, 	// RESERVED_CORE_3E22
+	{0x3E24, 0x1401, I2C_16BIT}, 	// RESERVED_CORE_3E24
+	{0x3E26, 0x0600, I2C_16BIT}, 	// RESERVED_CORE_3E26
+	{0x3E30, 0x0037, I2C_16BIT}, 	// RESERVED_CORE_3E30
+	{0x3E32, 0x1638, I2C_16BIT}, 	// RESERVED_CORE_3E32
+	{0x3E90, 0x0E05, I2C_16BIT}, 	// RESERVED_CORE_3E90
+	{0x3E92, 0x1310, I2C_16BIT}, 	// RESERVED_CORE_3E92
+	{0x3E94, 0x0904, I2C_16BIT}, 	// RESERVED_CORE_3E94
+	{0x3E96, 0x0B00, I2C_16BIT}, 	// RESERVED_CORE_3E96
+	{0x3E98, 0x130B, I2C_16BIT}, 	// RESERVED_CORE_3E98
+	{0x3E9A, 0x0C06, I2C_16BIT}, 	// RESERVED_CORE_3E9A
+	{0x3E9C, 0x1411, I2C_16BIT}, 	// RESERVED_CORE_3E9C
+	{0x3E9E, 0x0E01, I2C_16BIT}, 	// RESERVED_CORE_3E9E
+	{0x3ECC, 0x4091, I2C_16BIT}, 	// RESERVED_CORE_3ECC
+	{0x3ECE, 0x430D, I2C_16BIT}, 	// DAC_LD_2_3
+	{0x3ED0, 0x1817, I2C_16BIT}, 	// DAC_LD_4_5
+	{0x3ED2, 0x8504, I2C_16BIT}, 	// RESERVED_CORE_3ED2
+	{0x0982, 0x0000, I2C_16BIT}, 	// ACCESS_CTL_STAT
+	{0x098A, 0x0000, I2C_16BIT}, 	// PHYSICAL_ADDRESS_ACCESS
+	{0x8251, 0x3C3C, I2C_16BIT},
+	{0x8253, 0xBDD1, I2C_16BIT},
+	{0x8255, 0xF2D6, I2C_16BIT},
+	{0x8257, 0x15C1, I2C_16BIT},
+	{0x8259, 0x0126, I2C_16BIT},
+	{0x825B, 0x3ADC, I2C_16BIT},
+	{0x825D, 0x0A30, I2C_16BIT},
+	{0x825F, 0xED02, I2C_16BIT},
+	{0x8261, 0xDC08, I2C_16BIT},
+	{0x8263, 0xED00, I2C_16BIT},
+	{0x8265, 0xFC01, I2C_16BIT},
+	{0x8267, 0xFCBD, I2C_16BIT},
+	{0x8269, 0xF5FC, I2C_16BIT},
+	{0x826B, 0x30EC, I2C_16BIT},
+	{0x826D, 0x02FD, I2C_16BIT},
+	{0x826F, 0x0344, I2C_16BIT},
+	{0x8271, 0xB303, I2C_16BIT},
+	{0x8273, 0x4025, I2C_16BIT},
+	{0x8275, 0x0DCC, I2C_16BIT},
+	{0x8277, 0x3180, I2C_16BIT},
+	{0x8279, 0xED00, I2C_16BIT},
+	{0x827B, 0xCCA0, I2C_16BIT},
+	{0x827D, 0x00BD, I2C_16BIT},
+	{0x827F, 0xFBFB, I2C_16BIT},
+	{0x8281, 0x2013, I2C_16BIT},
+	{0x8283, 0xFC03, I2C_16BIT},
+	{0x8285, 0x44B3, I2C_16BIT},
+	{0x8287, 0x0342, I2C_16BIT},
+	{0x8289, 0x220B, I2C_16BIT},
+	{0x828B, 0xCC31, I2C_16BIT},
+	{0x828D, 0x80ED, I2C_16BIT},
+	{0x828F, 0x00CC, I2C_16BIT},
+	{0x8291, 0xA000, I2C_16BIT},
+	{0x8293, 0xBDFC, I2C_16BIT},
+	{0x8295, 0x1738, I2C_16BIT},
+	{0x8297, 0x3839, I2C_16BIT},
+	{0x8299, 0x3CD6, I2C_16BIT},
+	{0x829B, 0x15C1, I2C_16BIT},
+	{0x829D, 0x0126, I2C_16BIT},
+	{0x829F, 0x70FC, I2C_16BIT},
+	{0x82A1, 0x0344, I2C_16BIT},
+	{0x82A3, 0xB303, I2C_16BIT},
+	{0x82A5, 0x4025, I2C_16BIT},
+	{0x82A7, 0x13FC, I2C_16BIT},
+	{0x82A9, 0x7E26, I2C_16BIT},
+	{0x82AB, 0x83FF, I2C_16BIT},
+	{0x82AD, 0xFF27, I2C_16BIT},
+	{0x82AF, 0x0BFC, I2C_16BIT},
+	{0x82B1, 0x7E26, I2C_16BIT},
+	{0x82B3, 0xFD03, I2C_16BIT},
+	{0x82B5, 0x4CCC, I2C_16BIT},
+	{0x82B7, 0xFFFF, I2C_16BIT},
+	{0x82B9, 0x2013, I2C_16BIT},
+	{0x82BB, 0xFC03, I2C_16BIT},
+	{0x82BD, 0x44B3, I2C_16BIT},
+	{0x82BF, 0x0342, I2C_16BIT},
+	{0x82C1, 0x220E, I2C_16BIT},
+	{0x82C3, 0xFC7E, I2C_16BIT},
+	{0x82C5, 0x2683, I2C_16BIT},
+	{0x82C7, 0xFFFF, I2C_16BIT},
+	{0x82C9, 0x2606, I2C_16BIT},
+	{0x82CB, 0xFC03, I2C_16BIT},
+	{0x82CD, 0x4CFD, I2C_16BIT},
+	{0x82CF, 0x7E26, I2C_16BIT},
+	{0x82D1, 0xFC7E, I2C_16BIT},
+	{0x82D3, 0x2683, I2C_16BIT},
+	{0x82D5, 0xFFFF, I2C_16BIT},
+	{0x82D7, 0x2605, I2C_16BIT},
+	{0x82D9, 0xFC03, I2C_16BIT},
+	{0x82DB, 0x4A20, I2C_16BIT},
+	{0x82DD, 0x03FC, I2C_16BIT},
+	{0x82DF, 0x0348, I2C_16BIT},
+	{0x82E1, 0xFD7E, I2C_16BIT},
+	{0x82E3, 0xD0FC, I2C_16BIT},
+	{0x82E5, 0x7ED2, I2C_16BIT},
+	{0x82E7, 0x5F84, I2C_16BIT},
+	{0x82E9, 0xF030, I2C_16BIT},
+	{0x82EB, 0xED00, I2C_16BIT},
+	{0x82ED, 0xDC0A, I2C_16BIT},
+	{0x82EF, 0xB303, I2C_16BIT},
+	{0x82F1, 0x4625, I2C_16BIT},
+	{0x82F3, 0x10EC, I2C_16BIT},
+	{0x82F5, 0x0027, I2C_16BIT},
+	{0x82F7, 0x0CFD, I2C_16BIT},
+	{0x82F9, 0x034E, I2C_16BIT},
+	{0x82FB, 0xFC7E, I2C_16BIT},
+	{0x82FD, 0xD284, I2C_16BIT},
+	{0x82FF, 0x0FED, I2C_16BIT},
+	{0x8301, 0x0020, I2C_16BIT},
+	{0x8303, 0x19DC, I2C_16BIT},
+	{0x8305, 0x0AB3, I2C_16BIT},
+	{0x8307, 0x0346, I2C_16BIT},
+	{0x8309, 0x2415, I2C_16BIT},
+	{0x830B, 0xEC00, I2C_16BIT},
+	{0x830D, 0x8300, I2C_16BIT},
+	{0x830F, 0x0026, I2C_16BIT},
+	{0x8311, 0x0EFC, I2C_16BIT},
+	{0x8313, 0x7ED2, I2C_16BIT},
+	{0x8315, 0x840F, I2C_16BIT},
+	{0x8317, 0xFA03, I2C_16BIT},
+	{0x8319, 0x4FBA, I2C_16BIT},
+	{0x831B, 0x034E, I2C_16BIT},
+	{0x831D, 0xFD7E, I2C_16BIT},
+	{0x831F, 0xD2BD, I2C_16BIT},
+	{0x8321, 0xD2AD, I2C_16BIT},
+	{0x8323, 0x3839, I2C_16BIT},
+	{0x098E, 0x0000, I2C_16BIT}, 	// LOGICAL_ADDRESS_ACCESS
+	{0x0982, 0x0000, I2C_16BIT}, 	// ACCESS_CTL_STAT
+	{0x098A, 0x0000, I2C_16BIT}, 	// PHYSICAL_ADDRESS_ACCESS
+	{0x8340, 0x0048, I2C_16BIT},
+	{0x8342, 0x0040, I2C_16BIT},
+	{0x8344, 0x0000, I2C_16BIT},
+	{0x8346, 0x0040, I2C_16BIT},
+	{0x8348, 0x1817, I2C_16BIT},
+	{0x834A, 0x1857, I2C_16BIT},
+	{0x098E, 0x0000, I2C_16BIT}, 	// LOGICAL_ADDRESS_ACCESS
+	{0x0982, 0x0000, I2C_16BIT}, 	// ACCESS_CTL_STAT
+	{0x098A, 0x0000, I2C_16BIT}, 	// PHYSICAL_ADDRESS_ACCESS
+	{0x824D, 0x0251, I2C_16BIT},
+	{0x824F, 0x0299, I2C_16BIT},
+	{0x098E, 0x0000, I2C_16BIT}, 	// LOGICAL_ADDRESS_ACCESS
+	{0x3210, 0x00B0, I2C_16BIT}, 	// COLOR_PIPELINE_CONTROL
+	
+	{ 0x3640, 0x0150, I2C_16BIT }, 	// P_G1_P0Q0      
+	{ 0x3642, 0xB66A, I2C_16BIT }, 	// P_G1_P0Q1      
+	{ 0x3644, 0x2990, I2C_16BIT }, 	// P_G1_P0Q2      
+	{ 0x3646, 0x880B, I2C_16BIT }, 	// P_G1_P0Q3      
+	{ 0x3648, 0x064E, I2C_16BIT }, 	// P_G1_P0Q4      
+	{ 0x364A, 0x0190, I2C_16BIT }, 	// P_R_P0Q0       
+	{ 0x364C, 0xA20B, I2C_16BIT }, 	// P_R_P0Q1       
+	{ 0x364E, 0x3850, I2C_16BIT }, 	// P_R_P0Q2       
+	{ 0x3650, 0xAD6D, I2C_16BIT }, 	// P_R_P0Q3       
+	{ 0x3652, 0x07EF, I2C_16BIT }, 	// P_R_P0Q4       
+	{ 0x3654, 0x00D0, I2C_16BIT }, 	// P_B_P0Q0       
+	{ 0x3656, 0xE20A, I2C_16BIT }, 	// P_B_P0Q1       
+	{ 0x3658, 0x1CF0, I2C_16BIT }, 	// P_B_P0Q2       
+	{ 0x365A, 0x894D, I2C_16BIT }, 	// P_B_P0Q3       
+	{ 0x365C, 0x31AE, I2C_16BIT }, 	// P_B_P0Q4       
+	{ 0x365E, 0x03D0, I2C_16BIT }, 	// P_G2_P0Q0      
+	{ 0x3660, 0x8FAA, I2C_16BIT }, 	// P_G2_P0Q1      
+	{ 0x3662, 0x3050, I2C_16BIT }, 	// P_G2_P0Q2      
+	{ 0x3664, 0x36E9, I2C_16BIT }, 	// P_G2_P0Q3      
+	{ 0x3666, 0x006E, I2C_16BIT }, 	// P_G2_P0Q4      
+	{ 0x3680, 0xDFAA, I2C_16BIT }, 	// P_G1_P1Q0      
+	{ 0x3682, 0x16EA, I2C_16BIT }, 	// P_G1_P1Q1      
+	{ 0x3684, 0x1CCE, I2C_16BIT }, 	// P_G1_P1Q2      
+	{ 0x3686, 0x510C, I2C_16BIT }, 	// P_G1_P1Q3      
+	{ 0x3688, 0x8A4D, I2C_16BIT }, 	// P_G1_P1Q4      
+	{ 0x368A, 0x970B, I2C_16BIT }, 	// P_R_P1Q0       
+	{ 0x368C, 0x116D, I2C_16BIT }, 	// P_R_P1Q1       
+	{ 0x368E, 0x404E, I2C_16BIT }, 	// P_R_P1Q2       
+	{ 0x3690, 0xB2CD, I2C_16BIT }, 	// P_R_P1Q3       
+	{ 0x3692, 0xDF2E, I2C_16BIT }, 	// P_R_P1Q4       
+	{ 0x3694, 0xE60B, I2C_16BIT }, 	// P_B_P1Q0       
+	{ 0x3696, 0x386C, I2C_16BIT }, 	// P_B_P1Q1       
+	{ 0x3698, 0x6A4D, I2C_16BIT }, 	// P_B_P1Q2       
+	{ 0x369A, 0x820C, I2C_16BIT }, 	// P_B_P1Q3       
+	{ 0x369C, 0xC02E, I2C_16BIT }, 	// P_B_P1Q4       
+	{ 0x369E, 0xB62B, I2C_16BIT }, 	// P_G2_P1Q0      
+	{ 0x36A0, 0x2CAB, I2C_16BIT }, 	// P_G2_P1Q1      
+	{ 0x36A2, 0x23CE, I2C_16BIT }, 	// P_G2_P1Q2      
+	{ 0x36A4, 0xD629, I2C_16BIT }, 	// P_G2_P1Q3      
+	{ 0x36A6, 0xADAD, I2C_16BIT }, 	// P_G2_P1Q4      
+	{ 0x36C0, 0x1A90, I2C_16BIT }, 	// P_G1_P2Q0      
+	{ 0x36C2, 0xC56E, I2C_16BIT }, 	// P_G1_P2Q1      
+	{ 0x36C4, 0x456E, I2C_16BIT }, 	// P_G1_P2Q2      
+	{ 0x36C6, 0x2CEF, I2C_16BIT }, 	// P_G1_P2Q3      
+	{ 0x36C8, 0x8FCD, I2C_16BIT }, 	// P_G1_P2Q4      
+	{ 0x36CA, 0x2890, I2C_16BIT }, 	// P_R_P2Q0       
+	{ 0x36CC, 0xB4CD, I2C_16BIT }, 	// P_R_P2Q1       
+	{ 0x36CE, 0x6D90, I2C_16BIT }, 	// P_R_P2Q2       
+	{ 0x36D0, 0x43B0, I2C_16BIT }, 	// P_R_P2Q3       
+	{ 0x36D2, 0x8692, I2C_16BIT }, 	// P_R_P2Q4       
+	{ 0x36D4, 0x0CD0, I2C_16BIT }, 	// P_B_P2Q0       
+	{ 0x36D6, 0x8CCB, I2C_16BIT }, 	// P_B_P2Q1       
+	{ 0x36D8, 0x23AE, I2C_16BIT }, 	// P_B_P2Q2       
+	{ 0x36DA, 0x01AF, I2C_16BIT }, 	// P_B_P2Q3       
+	{ 0x36DC, 0x8F4F, I2C_16BIT }, 	// P_B_P2Q4       
+	{ 0x36DE, 0x1BD0, I2C_16BIT }, 	// P_G2_P2Q0      
+	{ 0x36E0, 0xE90D, I2C_16BIT }, 	// P_G2_P2Q1      
+	{ 0x36E2, 0xA3E7, I2C_16BIT }, 	// P_G2_P2Q2      
+	{ 0x36E4, 0x4849, I2C_16BIT }, 	// P_G2_P2Q3      
+	{ 0x36E6, 0x65EF, I2C_16BIT }, 	// P_G2_P2Q4      
+	{ 0x3700, 0x6A8E, I2C_16BIT }, 	// P_G1_P3Q0      
+	{ 0x3702, 0x6A0E, I2C_16BIT }, 	// P_G1_P3Q1      
+	{ 0x3704, 0xCA4F, I2C_16BIT }, 	// P_G1_P3Q2      
+	{ 0x3706, 0x8231, I2C_16BIT }, 	// P_G1_P3Q3      
+	{ 0x3708, 0xC5EE, I2C_16BIT }, 	// P_G1_P3Q4      
+	{ 0x370A, 0x278E, I2C_16BIT }, 	// P_R_P3Q0       
+	{ 0x370C, 0x97ED, I2C_16BIT }, 	// P_R_P3Q1       
+	{ 0x370E, 0xA4EF, I2C_16BIT }, 	// P_R_P3Q2       
+	{ 0x3710, 0x9BCE, I2C_16BIT }, 	// P_R_P3Q3       
+	{ 0x3712, 0x14D0, I2C_16BIT }, 	// P_R_P3Q4       
+	{ 0x3714, 0x1BAE, I2C_16BIT }, 	// P_B_P3Q0       
+	{ 0x3716, 0x45AA, I2C_16BIT }, 	// P_B_P3Q1       
+	{ 0x3718, 0xA0CD, I2C_16BIT }, 	// P_B_P3Q2       
+	{ 0x371A, 0x3DEF, I2C_16BIT }, 	// P_B_P3Q3       
+	{ 0x371C, 0xDF2F, I2C_16BIT }, 	// P_B_P3Q4       
+	{ 0x371E, 0x052F, I2C_16BIT }, 	// P_G2_P3Q0      
+	{ 0x3720, 0x3F8E, I2C_16BIT }, 	// P_G2_P3Q1      
+	{ 0x3722, 0xC22F, I2C_16BIT }, 	// P_G2_P3Q2      
+	{ 0x3724, 0xAB10, I2C_16BIT }, 	// P_G2_P3Q3      
+	{ 0x3726, 0x7AC9, I2C_16BIT }, 	// P_G2_P3Q4      
+	{ 0x3740, 0x4A0F, I2C_16BIT }, 	// P_G1_P4Q0      
+	{ 0x3742, 0x1EB0, I2C_16BIT }, 	// P_G1_P4Q1      
+	{ 0x3744, 0x5FAE, I2C_16BIT }, 	// P_G1_P4Q2      
+	{ 0x3746, 0xF691, I2C_16BIT }, 	// P_G1_P4Q3      
+	{ 0x3748, 0xAC12, I2C_16BIT }, 	// P_G1_P4Q4      
+	{ 0x374A, 0x3E0F, I2C_16BIT }, 	// P_R_P4Q0       
+	{ 0x374C, 0x4ACE, I2C_16BIT }, 	// P_R_P4Q1       
+	{ 0x374E, 0x99B2, I2C_16BIT }, 	// P_R_P4Q2       
+	{ 0x3750, 0xDBF2, I2C_16BIT }, 	// P_R_P4Q3       
+	{ 0x3752, 0x6CB3, I2C_16BIT }, 	// P_R_P4Q4       
+	{ 0x3754, 0x408F, I2C_16BIT }, 	// P_B_P4Q0       
+	{ 0x3756, 0x5D4C, I2C_16BIT }, 	// P_B_P4Q1       
+	{ 0x3758, 0x22AF, I2C_16BIT }, 	// P_B_P4Q2       
+	{ 0x375A, 0xE76E, I2C_16BIT }, 	// P_B_P4Q3       
+	{ 0x375C, 0xC051, I2C_16BIT }, 	// P_B_P4Q4       
+	{ 0x375E, 0x434F, I2C_16BIT }, 	// P_G2_P4Q0      
+	{ 0x3760, 0x452F, I2C_16BIT }, 	// P_G2_P4Q1      
+	{ 0x3762, 0x1911, I2C_16BIT }, 	// P_G2_P4Q2      
+	{ 0x3764, 0xB3F0, I2C_16BIT }, 	// P_G2_P4Q3      
+	{ 0x3766, 0x9713, I2C_16BIT }, 	// P_G2_P4Q4      
+	{ 0x3782, 0x0114, I2C_16BIT }, 	// CENTER_ROW     
+	{ 0x3784, 0x012C, I2C_16BIT }, 	// CENTER_COLUMN 
+
+
+        /*
+ 	 {0x3640, 0x00F0, I2C_16BIT}, 	// P_G1_P0Q0
+	{0x3642, 0xD9AC, I2C_16BIT}, 	// P_G1_P0Q1
+	{0x3644, 0x02D0, I2C_16BIT}, 	// P_G1_P0Q2
+	{0x3646, 0x9B4E, I2C_16BIT}, 	// P_G1_P0Q3
+	{0x3648, 0xF22D, I2C_16BIT}, 	// P_G1_P0Q4
+	{0x364A, 0x0110, I2C_16BIT}, 	// P_R_P0Q0
+	{0x364C, 0x930D, I2C_16BIT}, 	// P_R_P0Q1
+	{0x364E, 0x1010, I2C_16BIT}, 	// P_R_P0Q2
+	{0x3650, 0x9A8E, I2C_16BIT}, 	// P_R_P0Q3
+	{0x3652, 0xBC4E, I2C_16BIT}, 	// P_R_P0Q4
+	{0x3654, 0x0130, I2C_16BIT}, 	// P_B_P0Q0
+	{0x3656, 0xBAED, I2C_16BIT}, 	// P_B_P0Q1
+	{0x3658, 0x6A6F, I2C_16BIT}, 	// P_B_P0Q2
+	{0x365A, 0xBFCD, I2C_16BIT}, 	// P_B_P0Q3
+	{0x365C, 0xC48E, I2C_16BIT}, 	// P_B_P0Q4
+	{0x365E, 0x02F0, I2C_16BIT}, 	// P_G2_P0Q0
+	{0x3660, 0xA32C, I2C_16BIT}, 	// P_G2_P0Q1
+	{0x3662, 0x0C30, I2C_16BIT}, 	// P_G2_P0Q2
+	{0x3664, 0xBEAE, I2C_16BIT}, 	// P_G2_P0Q3
+	{0x3666, 0xA08E, I2C_16BIT}, 	// P_G2_P0Q4
+	{0x3680, 0xA1EA, I2C_16BIT}, 	// P_G1_P1Q0
+	{0x3682, 0x61AA, I2C_16BIT}, 	// P_G1_P1Q1
+	{0x3684, 0xE16A, I2C_16BIT}, 	// P_G1_P1Q2
+	{0x3686, 0xB4ED, I2C_16BIT}, 	// P_G1_P1Q3
+	{0x3688, 0xD92E, I2C_16BIT}, 	// P_G1_P1Q4
+	{0x368A, 0xDE0A, I2C_16BIT}, 	// P_R_P1Q0
+	{0x368C, 0x7309, I2C_16BIT}, 	// P_R_P1Q1
+	{0x368E, 0xBC0D, I2C_16BIT}, 	// P_R_P1Q2
+	{0x3690, 0xA58A, I2C_16BIT}, 	// P_R_P1Q3
+	{0x3692, 0x390C, I2C_16BIT}, 	// P_R_P1Q4
+	{0x3694, 0x9AAB, I2C_16BIT}, 	// P_B_P1Q0
+	{0x3696, 0x7BEA, I2C_16BIT}, 	// P_B_P1Q1
+	{0x3698, 0xC86B, I2C_16BIT}, 	// P_B_P1Q2
+	{0x369A, 0x926B, I2C_16BIT}, 	// P_B_P1Q3
+	{0x369C, 0x87AC, I2C_16BIT}, 	// P_B_P1Q4
+	{0x369E, 0x82CB, I2C_16BIT}, 	// P_G2_P1Q0
+	{0x36A0, 0x5D2A, I2C_16BIT}, 	// P_G2_P1Q1
+	{0x36A2, 0x206C, I2C_16BIT}, 	// P_G2_P1Q2
+	{0x36A4, 0xD9AD, I2C_16BIT}, 	// P_G2_P1Q3
+	{0x36A6, 0xA08F, I2C_16BIT}, 	// P_G2_P1Q4
+	{0x36C0, 0x656F, I2C_16BIT}, 	// P_G1_P2Q0
+	{0x36C2, 0xC10D, I2C_16BIT}, 	// P_G1_P2Q1
+	{0x36C4, 0x8B2F, I2C_16BIT}, 	// P_G1_P2Q2
+	{0x36C6, 0xC3AF, I2C_16BIT}, 	// P_G1_P2Q3
+	{0x36C8, 0x8C6F, I2C_16BIT}, 	// P_G1_P2Q4
+	{0x36CA, 0x7C8F, I2C_16BIT}, 	// P_R_P2Q0
+	{0x36CC, 0xF04D, I2C_16BIT}, 	// P_R_P2Q1
+	{0x36CE, 0x11AD, I2C_16BIT}, 	// P_R_P2Q2
+	{0x36D0, 0x2D6E, I2C_16BIT}, 	// P_R_P2Q3
+	{0x36D2, 0x368F, I2C_16BIT}, 	// P_R_P2Q4
+	{0x36D4, 0x4C6F, I2C_16BIT}, 	// P_B_P2Q0
+	{0x36D6, 0xAE2E, I2C_16BIT}, 	// P_B_P2Q1
+	{0x36D8, 0xAA0F, I2C_16BIT}, 	// P_B_P2Q2
+	{0x36DA, 0x628F, I2C_16BIT}, 	// P_B_P2Q3
+	{0x36DC, 0x55B0, I2C_16BIT}, 	// P_B_P2Q4
+	{0x36DE, 0x66CF, I2C_16BIT}, 	// P_G2_P2Q0
+	{0x36E0, 0xBAAE, I2C_16BIT}, 	// P_G2_P2Q1
+	{0x36E2, 0xA5CF, I2C_16BIT}, 	// P_G2_P2Q2
+	{0x36E4, 0x780E, I2C_16BIT}, 	// P_G2_P2Q3
+	{0x36E6, 0x336E, I2C_16BIT}, 	// P_G2_P2Q4
+	{0x3700, 0x166B, I2C_16BIT}, 	// P_G1_P3Q0
+	{0x3702, 0x812F, I2C_16BIT}, 	// P_G1_P3Q1
+	{0x3704, 0xFDAC, I2C_16BIT}, 	// P_G1_P3Q2
+	{0x3706, 0x4E90, I2C_16BIT}, 	// P_G1_P3Q3
+	{0x3708, 0x4F11, I2C_16BIT}, 	// P_G1_P3Q4
+	{0x370A, 0x58EA, I2C_16BIT}, 	// P_R_P3Q0
+	{0x370C, 0xCE8A, I2C_16BIT}, 	// P_R_P3Q1
+	{0x370E, 0x890E, I2C_16BIT}, 	// P_R_P3Q2
+	{0x3710, 0x95CE, I2C_16BIT}, 	// P_R_P3Q3
+	{0x3712, 0x1891, I2C_16BIT}, 	// P_R_P3Q4
+	{0x3714, 0x04CC, I2C_16BIT}, 	// P_B_P3Q0
+	{0x3716, 0xBE4C, I2C_16BIT}, 	// P_B_P3Q1
+	{0x3718, 0x992F, I2C_16BIT}, 	// P_B_P3Q2
+	{0x371A, 0x900F, I2C_16BIT}, 	// P_B_P3Q3
+	{0x371C, 0x1271, I2C_16BIT}, 	// P_B_P3Q4
+	{0x371E, 0x626C, I2C_16BIT}, 	// P_G2_P3Q0
+	{0x3720, 0xBB0E, I2C_16BIT}, 	// P_G2_P3Q1
+	{0x3722, 0xF6AF, I2C_16BIT}, 	// P_G2_P3Q2
+	{0x3724, 0x2B50, I2C_16BIT}, 	// P_G2_P3Q3
+	{0x3726, 0x1B12, I2C_16BIT}, 	// P_G2_P3Q4
+	{0x3740, 0xD7CC, I2C_16BIT}, 	// P_G1_P4Q0
+	{0x3742, 0xE2EE, I2C_16BIT}, 	// P_G1_P4Q1
+	{0x3744, 0x75B0, I2C_16BIT}, 	// P_G1_P4Q2
+	{0x3746, 0x1811, I2C_16BIT}, 	// P_G1_P4Q3
+	{0x3748, 0x9972, I2C_16BIT}, 	// P_G1_P4Q4
+	{0x374A, 0x118E, I2C_16BIT}, 	// P_R_P4Q0
+	{0x374C, 0x0747, I2C_16BIT}, 	// P_R_P4Q1
+	{0x374E, 0x1F30, I2C_16BIT}, 	// P_R_P4Q2
+	{0x3750, 0xD7F1, I2C_16BIT}, 	// P_R_P4Q3
+	{0x3752, 0xDCF3, I2C_16BIT}, 	// P_R_P4Q4
+	{0x3754, 0x1D6E, I2C_16BIT}, 	// P_B_P4Q0
+	{0x3756, 0x068F, I2C_16BIT}, 	// P_B_P4Q1
+	{0x3758, 0x07D0, I2C_16BIT}, 	// P_B_P4Q2
+	{0x375A, 0x9F12, I2C_16BIT}, 	// P_B_P4Q3
+	{0x375C, 0xB9B3, I2C_16BIT}, 	// P_B_P4Q4
+	{0x375E, 0x99CE, I2C_16BIT}, 	// P_G2_P4Q0
+	{0x3760, 0x2F0F, I2C_16BIT}, 	// P_G2_P4Q1
+	{0x3762, 0x0DB1, I2C_16BIT}, 	// P_G2_P4Q2
+	{0x3764, 0x8C12, I2C_16BIT}, 	// P_G2_P4Q3
+	{0x3766, 0x8BB3, I2C_16BIT}, 	// P_G2_P4Q4
+	{0x3782, 0x00F4, I2C_16BIT}, 	// CENTER_ROW
+	{0x3784, 0x0188, I2C_16BIT}, 	// CENTER_COLUMN
+	*/
+	{0x3210, 0x00B8, I2C_16BIT}, 	// COLOR_PIPELINE_CONTROL
+	{0x3210, 0x00B8, I2C_16BIT}, 	// COLOR_PIPELINE_CONTROL
+	{0xA02F, 0x0176, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_0
+	{0xA031, 0xFF62, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_1
+	{0xA033, 0x0042, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_2
+	{0xA035, 0xFF96, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_3
+	{0xA037, 0x00FE, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_4
+	{0xA039, 0x004F, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_5
+	{0xA03B, 0xFFAB, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_6
+	{0xA03D, 0xFF07, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_7
+	{0xA03F, 0x01F1, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_8
+	{0xA041, 0x001D, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_9
+	{0xA043, 0x0046, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_L_10
+	{0xA045, 0x00C5, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_0
+	{0xA047, 0xFFB7, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_1
+	{0xA049, 0xFFD8, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_2
+	{0xA04B, 0x002F, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_3
+	{0xA04D, 0x005D, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_4
+	{0xA04F, 0xFF9E, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_5
+	{0xA051, 0x0058, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_6
+	{0xA053, 0x006B, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_7
+	{0xA055, 0xFFEE, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_8
+	{0xA057, 0x0010, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_9
+	{0xA059, 0xFFE0, I2C_16BIT}, 	// CAM_AWB_CONFIG_CCM_RL_10
+	{0x2112, 0x051E, I2C_16BIT}, 	// AWB_WEIGHT_R0
+	{0x2114, 0x0000, I2C_16BIT}, 	// AWB_WEIGHT_R1
+	{0x2116, 0xAE40, I2C_16BIT}, 	// AWB_WEIGHT_R2
+	{0x2118, 0x7AE1, I2C_16BIT}, 	// AWB_WEIGHT_R3
+	{0x211A, 0x1996, I2C_16BIT}, 	// AWB_WEIGHT_R4
+	{0x211C, 0x0F5A, I2C_16BIT}, 	// AWB_WEIGHT_R5
+	{0x211E, 0xFDD8, I2C_16BIT}, 	// AWB_WEIGHT_R6
+	{0x2120, 0x5000, I2C_16BIT}, 	// AWB_WEIGHT_R7
+	{0xA065, 0x03, I2C_8BIT}, 	// CAM_AWB_CONFIG_X_SCALE
+
+	{0xA061, 0x0039, I2C_16BIT}, 	//  cam_awb_config_x_shift_pre_adj  for AWB coolwhite tune
+	{0xA063, 0x0032, I2C_16BIT}, 	//  cam_awb_config_Y_shift_pre_adj  forAWB coolwhite tune
+	{0x9418, 0x2E, I2C_8BIT}, 	// AWB_B_SCENE_RATIO_LOWER
+	{0x326E, 0x0006, I2C_16BIT}, 	// LOW_PASS_YUV_FILTER
+	{0x33F4, 0x000B, I2C_16BIT}, 	// RESERVED_SOC1_33F4
+	{0xA07A, 0x04, I2C_8BIT}, 	// CAM_LL_CONFIG_AP_THRESH_START
+	{0xA07C, 0x0c, I2C_8BIT}, 	// CAM_LL_CONFIG_AP_GAIN_START
+	{0xA081, 0x1E, I2C_8BIT}, 	// CAM_LL_CONFIG_DM_EDGE_TH_START
+	{0xA082, 0x50, I2C_8BIT}, 	// CAM_LL_CONFIG_DM_EDGE_TH_STOP
+	{0xA0B1, 0x20, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_RED_START
+	{0xA0B2, 0x3D, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_RED_STOP
+	{0xA0B3, 0x20, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_GREEN_START
+	{0xA0B4, 0x3D, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_GREEN_STOP
+	{0xA0B5, 0x20, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_BLUE_START
+	{0xA0B6, 0x3D, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_BLUE_STOP
+	{0xA0B7, 0x20, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_MIN_MAX_START
+	{0xA0B8, 0x3D, I2C_8BIT}, 	// CAM_LL_CONFIG_NR_MIN_MAX_STOP
+	{0xA05F, 0x80, I2C_8BIT}, 	// CAM_AWB_CONFIG_START_SATURATION
+	{0xA060, 0x05, I2C_8BIT}, 	// CAM_AWB_CONFIG_END_SATURATION
+	{0xA0B9, 0x0026, I2C_16BIT}, 	// CAM_LL_CONFIG_START_GAIN_METRIC
+	{0xA0BB, 0x00B4, I2C_16BIT}, 	// CAM_LL_CONFIG_STOP_GAIN_METRIC
+	{0xA07E, 0x001E, I2C_16BIT}, 	// CAM_LL_CONFIG_CDC_THRESHOLD_BM
+	{0x9C00, 0xBF, I2C_8BIT}, 	// LL_MODE
+	{0xA085, 0x0078, I2C_16BIT}, 	// CAM_LL_CONFIG_FTB_AVG_YSUM_STOP
+	{0xA087, 0x00, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_0
+	{0xA088, 0x07, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_1
+	{0xA089, 0x16, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_2
+	{0xA08A, 0x30, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_3
+	{0xA08B, 0x52, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_4
+	{0xA08C, 0x6D, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_5
+	{0xA08D, 0x86, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_6
+	{0xA08E, 0x9B, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_7
+	{0xA08F, 0xAB, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_8
+	{0xA090, 0xB9, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_9
+	{0xA091, 0xC5, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_10
+	{0xA092, 0xCF, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_11
+	{0xA093, 0xD8, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_12
+	{0xA094, 0xE0, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_13
+	{0xA095, 0xE7, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_14
+	{0xA096, 0xEE, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_15
+	{0xA097, 0xF4, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_16
+	{0xA098, 0xFA, I2C_8BIT}, 	// CAM_LL_CONFIG_GAMMA_CONTRAST_CURVE_17
+	{0xA0AD, 0x0005, I2C_16BIT}, 	// CAM_LL_CONFIG_GAMMA_START_BM
+	{0xA0AF, 0x0021, I2C_16BIT}, 	// CAM_LL_CONFIG_GAMMA_STOP_BM
+	{0xA020, 0x3C, I2C_8BIT}, 	// CAM_AE_CONFIG_BASE_TARGET
+	{0xA027, 0x0030, I2C_16BIT}, 	// CAM_AE_CONFIG_MIN_VIRT_AGAIN
+	{0xA029, 0x0120, I2C_16BIT}, 	// CAM_AE_CONFIG_MAX_VIRT_AGAIN
+	{0xA01C, 0x00a0, I2C_16BIT}, 	// CAM_AE_CONFIG_TARGET_AGAIN
+	{0xA023, 0x0040, I2C_16BIT}, 	// CAM_AE_CONFIG_MIN_VIRT_DGAIN
+	{0xA025, 0x0120, I2C_16BIT}, 	// CAM_AE_CONFIG_MAX_VIRT_DGAIN
+	{0xA01E, 0x00a0, I2C_16BIT}, 	// CAM_AE_CONFIG_TARGET_DGAIN
+	
+	{0x8C03, 0x01, I2C_8BIT}, 	// FD_STAT_MIN
+	{0x8C04, 0x03, I2C_8BIT}, 	// FD_STAT_MAX
+	{0x8C05, 0x05, I2C_8BIT}, 	// FD_MIN_AMPLITUDE
+	//{0x0018, 0x0002, I2C_16BIT}, 	// STANDBY_CONTROL_AND_STATUS
+	{0x8C00, 0x02, I2C_8BIT},
+	{0x8C01, 0x01, I2C_8BIT},	
+
+	{I2C_REG_TERM, I2C_VAL_TERM, I2C_LEN_TERM}
+};
+
+#endif /* ifndef MT9V115_REGS_H */
+
+
+
+
+
+
+
+
+
+

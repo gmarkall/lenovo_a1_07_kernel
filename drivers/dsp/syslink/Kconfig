@@ -1,0 +1,116 @@
+
+
+menuconfig Sys_Link
+	bool "Sys_Link"
+	depends on ARCH_OMAP4
+	default y
+
+if Sys_Link
+
+config  SYSLINK_PROC
+        tristate "Syslink ProcMgr"
+        default y
+	help
+           Syslink Proc manager
+
+config  SYSLINK_PROC4430
+        tristate "Proc 4430"
+        depends on SYSLINK_PROC
+        default y
+        help
+           Ducati Proc implementation
+
+config  DUCATI_BASEIMAGE_PHYS_ADDR
+	hex "Physical Address where the Ducati is loaded"
+	depends on SYSLINK_PROC4430
+	default 0x9CF00000
+	help
+	  Specify the physical address where the Ducati image will be
+	  loaded.
+
+config  SYSLINK_DUCATI_PM
+	bool "IPU Power Management"
+	depends on SYSLINK_PROC
+        default y
+        help
+	  Enables the options available for ipu_pm implementation
+
+config  SYSLINK_IPU_SELF_HIBERNATION
+	bool "Enable IPU Self hibernation"
+	depends on SYSLINK_DUCATI_PM
+	default y
+	help
+	  IPU will hibernate by it self after a configurable time, this
+	  controls the self hibernation, IPU will hibernate when a system
+	  suspend is executed and wake up when system resumes.
+
+config  DUCATI_WATCH_DOG
+	bool "Enable Ducati watch dog timer"
+	depends on SYSLINK_IPU_SELF_HIBERNATION
+	default y
+	help
+	  Ducati cores will trigger reset if any of the two M3 cores stop
+	  responding after 7 seconds. Requires Hibernation enabled. If
+	  hibernation is enabled, M3 cores go to hibernation after 5
+	  seconds. Ducati cannot go to hibernation if fault occurs on one
+	  of the M3 cores
+
+config  SYSLINK_IPU_PM_TRACES
+	bool "IPU PM Debug Traces"
+	depends on SYSLINK_DUCATI_PM
+	default n
+
+config  OMAP_DEVICE_HANDLER
+        tristate "Device Handler"
+        depends on OMAP_IOMMU
+        select OMAP_REMOTE_PROC
+        select MPU_SYSLINK_IPC
+        default y
+        help
+          Select this to enable the Device Handler.  The Device Handler
+          is a module that handles device-specific events.  Events handled
+          include process termination.
+
+config MPU_SYSLINK_PLATFORM
+        tristate "Syslink Platform Module"
+        default y
+        help
+          Syslink Platform Module
+
+config MPU_SYSLINK_IPC
+        tristate "Syslink IPC Module"
+        depends on SYSLINK_PROC4430
+        default y
+        select OMAP_MBOX_FWK
+        select OMAP_REMOTE_PROC
+        help
+          Syslink IPC Module (includes Notify)
+
+config SYSLINK_USE_SYSMGR
+        bool "Enable SYS MGR setup"
+        depends on MPU_SYSLINK_IPC && SYSLINK_PROC
+        default y
+        help
+          This is the experimental option to enable SYS manager setup
+
+config SYSLINK_IOMMU_ENABLE
+        bool
+        select OMAP_IOMMU
+	select OMAP_USER_DMM
+	default y
+
+config SYSLINK_RECOVERY
+        bool "Enable Syslink Fault Recovery"
+	default y
+
+config DMM_DMA_API
+	bool "Enable DMA APIs for flushing"
+	depends on SYSLINK_IOMMU_ENABLE
+	default n
+	help
+	   Setting this would enable DMA APIs in Kernel for Mapped buffers
+	   cache maintainance. Not setting this option will allow unrestricted
+	   cache operations on the userspace buffers. This option would be
+	   made default once the code is stabilized
+
+endif

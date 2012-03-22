@@ -1,0 +1,80 @@
+menu "OMAP2/3 Display Device Drivers"
+        depends on OMAP2_DSS
+
+config PANEL_GENERIC
+        tristate "Generic Panel"
+	default y
+        help
+	  Generic panel driver.
+	  Used for DVI output for Beagle and OMAP3 SDP.
+
+config PANEL_SHARP_LS037V7DW01
+        tristate "Sharp LS037V7DW01 LCD Panel"
+        depends on OMAP2_DSS
+	default y
+        select BACKLIGHT_CLASS_DEVICE
+        help
+          LCD Panel used in TI's SDP3430 and EVM boards
+
+config PANEL_SHARP_LQ043T1DG01
+        tristate "Sharp LQ043T1DG01 LCD Panel"
+        depends on OMAP2_DSS
+        help
+
+          LCD Panel used in TI's OMAP3517 EVM boards
+
+config PANEL_PICO_DLP
+        tristate "OMAP PICO DLP Panel"
+        depends on OMAP2_DSS
+        help
+          LCD Panel used in TI's SDP4430 and EVM boards
+
+config PANEL_TAAL
+        tristate "Taal DSI Panel"
+        depends on OMAP2_DSS_DSI
+        help
+          Taal DSI command mode panel from TPO.
+
+config PANEL_NEC_NL8048HL11_01B
+        tristate "NEC NL8048HL11-01B Panel"
+	depends on OMAP2_DSS
+	default y
+        help
+          LCD Panel used in the Zoom boards
+
+config PANEL_SIL9022
+       tristate "HDMI interface"
+       help
+               HDMI interface used in the Zoom board
+
+config PANEL_TOPPOLY_TDO35S
+        tristate "Toppoly TDO35S LCD Panel support"
+        depends on OMAP2_DSS
+        help
+          LCD Panel used in CM-T35
+
+config PANEL_TPO_TD043MTEA1
+        tristate "TPO TD043MTEA1 LCD Panel"
+        depends on OMAP2_DSS && SPI
+        help
+          LCD Panel used in OMAP3 Pandora
+
+config PANEL_ACX565AKM
+	tristate "ACX565AKM Panel"
+	depends on OMAP2_DSS_SDI
+	select BACKLIGHT_CLASS_DEVICE
+	help
+	  This is the LCD panel used on Nokia N900
+
+config PANEL_HANNSTAR
+        tristate "Hannstar HSD100PXN1 10-inch Panel"
+        help
+          LCD Panel used in the Hannstar HSD100PXN1
+
+config PANEL_AT070TNA2
+		tristate "AT070TNA2 7-inch Panel"
+
+
+		help
+		  LCD panel used in the AT070TNA2
+endmenu
