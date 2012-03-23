@@ -143,7 +143,7 @@ extern int modem_resume_state;
 extern int g_sim_carddetect_status;
 
 // These variable defined in usb/serial/sierra.c
-extern int close_Sierra();
+//extern int close_Sierra();
 ////////////////////////////////////////////////////
 
 /*-------------------------------------------------------------------------*/
@@ -566,7 +566,7 @@ static int ehci_omap_dev_suspend(struct device *dev)
 	struct ehci_hcd_omap *omap = dev_get_drvdata(dev);
 	printk(KERN_DEBUG " omap_dev_suspend\n");
 
-   close_Sierra();
+   //close_Sierra();
 	if (!omap->suspended)
 		ehci_omap_enable(omap, 0);
 		
