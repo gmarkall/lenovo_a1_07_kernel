@@ -878,7 +878,7 @@ if(command_flag == 1)
 		default:
 			break;
 		}
-		mod_timer(&mg->timer, jiffies + msecs_to_jiffies(2000));
+		//mod_timer(&mg->timer, jiffies + msecs_to_jiffies(2000));
 	}
 	else
 	{
