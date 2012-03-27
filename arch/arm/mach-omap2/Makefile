@@ -181,6 +181,7 @@ obj-$(CONFIG_MACH_OMAP_ZOOM3)		+= board-zoom3.o \
 					   board-zoom-debugboard.o
 obj-$(CONFIG_MACH_OMAP3621_EVT1A)	+= board-evt1a.o \
 					   board-evt-peripherals.o \
+					   board-a1_07-btn-led.o \
 					   board-evt-panel.o \
 					   board-evt-camera.o \
 					   board-edp1-camera-s5k5ca.o \
