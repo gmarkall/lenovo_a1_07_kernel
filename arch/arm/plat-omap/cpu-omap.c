@@ -57,6 +57,20 @@ static cpumask_var_t omap4_cpumask;
 static int cpus_initialized;
 #endif
 
+static ssize_t overclock_show(struct kobject *, struct kobj_attribute *,
+              char *);
+static ssize_t overclock_store(struct kobject *k, struct kobj_attribute *,
+        const char *buf, size_t n);
+
+static struct kobj_attribute overclock_opp1_attr =
+    __ATTR(overclock_opp1, 0644, overclock_show, overclock_store);
+static struct kobj_attribute overclock_opp2_attr =
+    __ATTR(overclock_opp2, 0644, overclock_show, overclock_store);
+static struct kobj_attribute overclock_opp3_attr =
+    __ATTR(overclock_opp3, 0644, overclock_show, overclock_store);
+static struct kobj_attribute overclock_opp4_attr =
+    __ATTR(overclock_opp4, 0644, overclock_show, overclock_store);
+
 /* TODO: Add support for SDRAM timing changes */
 
 static int omap_verify_speed(struct cpufreq_policy *policy)
@@ -185,6 +199,7 @@ static int omap_target(struct cpufreq_policy *policy,
 static int omap_cpu_init(struct cpufreq_policy *policy)
 {
 	int result = 0;
+	int error = -EINVAL;
 	if (cpu_is_omap44xx())
 		mpu_clk = clk_get(NULL, "dpll_mpu_ck");
 	else
@@ -238,6 +253,27 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
 	cpus_initialized++;
 #endif
 
+	error = sysfs_create_file(power_kobj, &overclock_opp1_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
+	error = sysfs_create_file(power_kobj, &overclock_opp2_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
+	error = sysfs_create_file(power_kobj, &overclock_opp3_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
+	error = sysfs_create_file(power_kobj, &overclock_opp4_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
+
 	return 0;
 }
 
@@ -271,6 +307,140 @@ static struct cpufreq_driver omap_driver = {
 static int __init omap_cpufreq_init(void)
 {
 	return cpufreq_register_driver(&omap_driver);
+}
+
+static ssize_t overclock_show(struct kobject *kobj,
+        struct kobj_attribute *attr, char *buf)
+{
+	unsigned int freq;
+	unsigned int target_opp_nr;
+	unsigned int counter;
+	struct device *mpu_dev;
+	struct omap_opp *temp_opp;
+
+	mpu_dev = omap2_get_mpuss_device();
+	
+	if(IS_ERR(mpu_dev))
+	    return -EINVAL;
+
+	if ( attr == &overclock_opp1_attr) {
+	    target_opp_nr = 0;
+	}
+	if ( attr == &overclock_opp2_attr) {
+	    target_opp_nr = 1;
+	}
+	if ( attr == &overclock_opp3_attr) {
+	    target_opp_nr = 2;
+	}
+	if ( attr == &overclock_opp4_attr) {
+	    target_opp_nr = 3;
+	}
+	//Find opp (1 MHZ steps)
+	counter = 0;
+	for (freq = 0; counter < (target_opp_nr+1); freq += (1000*1000)) {
+	    if(!IS_ERR(opp_find_freq_exact(mpu_dev, freq, true)))
+	        counter++;
+	}
+  
+	if(freq == 0)
+	    return -EINVAL;
+	
+	freq = freq - (1000*1000);
+
+	return sprintf(buf, "%lu\n", freq / (1000*1000));
+}
+
+static ssize_t overclock_store(struct kobject *k,
+        struct kobj_attribute *attr, const char *buf, size_t n)
+{
+	unsigned int freq;
+	unsigned int help_freq;
+	unsigned int target_opp_nr;
+	unsigned int opp_lower_limit = 0;
+	unsigned int opp_upper_limit = 0;
+	unsigned int counter;
+	struct device *mpu_dev = omap2_get_mpuss_device();
+	struct omap_opp *temp_opp;
+	struct omap_opp *old_opp;
+	struct cpufreq_policy *mpu_policy = cpufreq_cpu_get(0);
+	struct cpufreq_frequency_table *mpu_freq_table = *omap_pm_cpu_get_freq_table();
+
+	if(IS_ERR(mpu_dev) || IS_ERR(mpu_policy) || IS_ERR(mpu_freq_table))
+	    return -EINVAL;
+
+	// Hard coded clock limits
+	if ( attr == &overclock_opp1_attr) {
+	    target_opp_nr = 0;
+	    opp_lower_limit = 100;
+	    opp_upper_limit = 500;
+	}
+	if ( attr == &overclock_opp2_attr) {
+	    target_opp_nr = 1;
+	    opp_lower_limit = 501;
+	    opp_upper_limit = 700;
+	}
+	if ( attr == &overclock_opp3_attr) {
+	    target_opp_nr = 2; 
+	    opp_lower_limit = 701;
+	    opp_upper_limit = 900;
+	}
+	if ( attr == &overclock_opp4_attr) {
+	    target_opp_nr = 3;
+	    opp_lower_limit = 901;
+	    opp_upper_limit = 1500;
+	}
+	// Find opp (1 MHZ steps)
+	counter = 0;
+	for (help_freq = 0; counter < (target_opp_nr+1); help_freq += (1000*1000)) {
+	    if (!IS_ERR(opp_find_freq_exact(mpu_dev, help_freq, true)))
+	        counter++;
+	}
+
+	if(help_freq == 0)
+	    return -EINVAL;
+  
+	help_freq = help_freq - (1000*1000);
+
+	temp_opp = opp_find_freq_exact(mpu_dev, help_freq, true);
+	if(IS_ERR(temp_opp))
+	    return -EINVAL;
+
+	if (sscanf(buf, "%u", &freq) == 1) {
+	    // Enforce clock limits
+	    if (freq >= opp_lower_limit && freq <= opp_upper_limit) {
+	        // Convert Megahertz to Hertz
+	        freq *= (1000*1000);
+      
+	        // Set new clocks
+	        opp_disable(temp_opp);
+	        temp_opp->rate = freq;
+	        mpu_freq_table[target_opp_nr].frequency = freq/1000;
+
+	        //Fix policy
+	        if(target_opp_nr == 0) { 
+	            mpu_policy->cpuinfo.min_freq = freq/1000;
+	            mpu_policy->min = freq/1000;
+	            mpu_policy->user_policy.min = freq/1000;
+	        } else if(target_opp_nr == 3) {
+	            mpu_policy->cpuinfo.max_freq = freq/1000;
+	            mpu_policy->max = freq/1000;
+	            mpu_policy->user_policy.max = freq/1000;
+	        }
+	        opp_enable(temp_opp);
+
+	        // Fix freq_table
+	        opp_exit_cpufreq_table(&freq_table);
+	        freq_table = mpu_freq_table;
+	        opp_init_cpufreq_table(mpu_dev, &freq_table);
+
+	        // Fix stats
+	        cpufreq_stats_update_freq_table(freq_table, 0);
+	    } else
+	    return -EINVAL;
+	} else
+	return -EINVAL;
+	
+	return n;
 }
 
 late_initcall(omap_cpufreq_init);

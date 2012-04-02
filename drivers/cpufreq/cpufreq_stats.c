@@ -20,6 +20,9 @@
 #include <linux/kobject.h>
 #include <linux/spinlock.h>
 #include <linux/notifier.h>
+#ifdef CONFIG_MACH_OMAP3621_EVT1A
+#include <linux/err.h>
+#endif /* CONFIG_MACH_OMAP3621_EVT1A */
 #include <asm/cputime.h>
 
 static spinlock_t cpufreq_stats_lock;
@@ -336,6 +339,28 @@ static struct notifier_block notifier_policy_block = {
 static struct notifier_block notifier_trans_block = {
 	.notifier_call = cpufreq_stat_notifier_trans
 };
+
+
+#ifdef CONFIG_MACH_OMAP3621_EVT1A
+int cpufreq_stats_update_freq_table(struct cpufreq_frequency_table *table, unsigned int cpu)
+{
+  unsigned int i;
+  struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
+
+  if(IS_ERR(table) || !stat)
+    return 0;
+
+  for (i = 0; table[i].frequency != CPUFREQ_TABLE_END && i < stat->max_state; i++) {
+    unsigned int freq = table[i].frequency;
+    if (freq == CPUFREQ_ENTRY_INVALID)
+      continue;
+    stat->freq_table[i] = freq;
+  }
+
+  return 1;
+}
+#endif /* CONFIG_MACH_OMAP3621_EVT1A */
+
 
 static int __init cpufreq_stats_init(void)
 {
