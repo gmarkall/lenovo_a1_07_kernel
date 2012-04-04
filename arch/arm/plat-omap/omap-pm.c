@@ -382,6 +382,8 @@ int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, long r)
 }
 #endif // temporarily fix L3 bus clock to 200 MHz (VDD2@1.2V)
 
+
+EXPORT_SYMBOL(omap_pm_set_min_bus_tput);
 //JCC, L3, Konstantin
 #if 0
 /* xxxxx This is workaround for the instabilities caused by the frequent
