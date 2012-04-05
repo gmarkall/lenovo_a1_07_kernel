@@ -536,11 +536,13 @@ static void bq27541_get_fw_version(struct i2c_client *client)
 	lsb = bq27541_read_reg(client, 0x1);
 
 	tmp = lsb * 0x100 +msb;
+	#if 0
 	printk("\n");
 	printk("\n");
 	printk("The FW_VERSION is %8x\n", tmp);
 	printk("\n");
 	printk("\n");
+	#endif
 	chip->fw_version = (unsigned int) tmp;
 
 }
@@ -558,11 +560,13 @@ static void bq27541_get_hw_version(struct i2c_client *client)
 	lsb = bq27541_read_reg(client, 0x1);
 
 	tmp = lsb * 0x100 +msb;
+	#if 0
 	printk("\n");
 	printk("\n");
 	printk("The HW_VERSION is %8x\n", tmp);
 	printk("\n");
 	printk("\n");
+	#endif
 	chip->hw_version = (unsigned int) tmp;
 
 }
