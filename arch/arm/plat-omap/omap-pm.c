@@ -1027,10 +1027,23 @@ int omap_pm_set_min_mpu_freq(struct device *dev, unsigned long f)
 	/* Save the current constraint */
 	old_max_level = mpu_tput->max_level;
 
-	if (f == -1)
+	if (f == -1) {
 		remove_req_tput(dev, mpu_tput);
-	else
+	} else {
+		struct cpufreq_policy policy;
+
+		cpufreq_get_policy(&policy, 0);
+
+		/*
+		* Ensure that this request is not conflicting with cpufreq
+		* constraints. If that is the case, cpufreq wins.
+		*/
+		if ((f/1000) < policy.min)
+			f = policy.min * 1000;
+		if ((f/1000) > policy.max)
+			f = policy.max * 1000;
 		add_req_tput(dev, f, mpu_tput);
+	}
 
 	/* Find max constraint after the operation */
 	max_lookup(mpu_tput);
