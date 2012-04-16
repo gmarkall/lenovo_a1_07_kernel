@@ -789,13 +789,27 @@ void omap_pm_dsp_set_min_opp(u8 opp_id)
 	 *
 	 */
 	if (dsp_req_id > mpu_req_id)
+	  pr_debug("OMAP PM: Requested dfreq/mfreq: %d/%d. didx/midx: %d/%d\n",
+          dsp_freq_table[dsp_req_id].frequency,
+          mpu_freq_table[mpu_req_id].frequency,
+          dsp_req_id, mpu_req_id);
+
+	  if (dsp_freq_table[dsp_req_id].frequency >
+          dsp_freq_table[mpu_req_id].frequency) {
 		selopp = dsp_req_id;
-	else
+	} else {
 		selopp = mpu_req_id;
+	}
 
 	/* Is a change requested? */
-	if (currspeed == dsp_freq_table[selopp].frequency)
+	if (currspeed == dsp_freq_table[selopp].frequency) {
+          pr_debug("OMAP PM: No freq change dfreq/mfreq: %d/%d. "
+          "didx/midx: %d/%d\n",
+          dsp_freq_table[selopp].frequency,
+          mpu_freq_table[selopp].frequency,
+          dsp_req_id, mpu_req_id);
 		return;
+	}
 
 	r = omap_device_set_rate(mpu_dev, mpu_dev,
 				mpu_freq_table[selopp].frequency * 1000);
@@ -804,6 +818,10 @@ void omap_pm_dsp_set_min_opp(u8 opp_id)
 	else
 		omap_device_set_rate(iva_dev, iva_dev,
 				dsp_freq_table[selopp].frequency * 1000);
+
+	pr_debug("OMAP PM: Set dfreq/mfreq: %d/%d\n",
+	dsp_freq_table[selopp].frequency,
+	mpu_freq_table[selopp].frequency);
 }
 
 
@@ -923,6 +941,10 @@ void omap_pm_cpu_set_freq(unsigned long f)
 //printk("JCC: omap_pm_cpu_set_freq(),                            OMAP=%d, DSP=%d\n", (selfreq/1000), (dsp_freq_table[i].frequency/1000));
 //JCC
 #endif
+
+	pr_debug("OMAP_PM: CPU set frequency - dsp/mpu: %d/%d\n",
+	dsp_freq_table[mpu_req_id].frequency,
+	mpu_freq_table[mpu_req_id].frequency);
 }
 
 unsigned long omap_pm_cpu_get_freq(void)

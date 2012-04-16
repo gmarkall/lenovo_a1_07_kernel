@@ -2668,10 +2668,11 @@ static struct omap_hwmod omap34xx_sr1_hwmod = {
 static u32 omap36xx_sr1_efuse_offs[] = {
 	OMAP3630_CONTROL_FUSE_OPP50_VDD1, OMAP3630_CONTROL_FUSE_OPP100_VDD1,
 	OMAP3630_CONTROL_FUSE_OPP120_VDD1, OMAP3630_CONTROL_FUSE_OPP1G_VDD1,
+	OMAP3630_CONTROL_FUSE_OPP1_2G_VDD1,
 };
 
 static u32 omap36xx_sr1_test_nvalues[] = {
-	0x898beb, 0x999b83, 0xaac5a8, 0xaab197,
+	0x898beb, 0x999b83, 0xaac5a8, 0xaab197, 0xaab197,
 };
 
 static struct omap_sr_dev_data omap36xx_sr1_dev_attr = {

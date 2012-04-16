@@ -70,6 +70,8 @@ static struct kobj_attribute overclock_opp3_attr =
     __ATTR(overclock_opp3, 0644, overclock_show, overclock_store);
 static struct kobj_attribute overclock_opp4_attr =
     __ATTR(overclock_opp4, 0644, overclock_show, overclock_store);
+static struct kobj_attribute overclock_opp5_attr =
+    __ATTR(overclock_opp5, 0644, overclock_show, overclock_store);
 
 /* TODO: Add support for SDRAM timing changes */
 
@@ -273,6 +275,11 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
 	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
 	    return error;
 	}
+	error = sysfs_create_file(power_kobj, &overclock_opp5_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
 
 	return 0;
 }
@@ -316,7 +323,6 @@ static ssize_t overclock_show(struct kobject *kobj,
 	unsigned int target_opp_nr;
 	unsigned int counter;
 	struct device *mpu_dev;
-	struct omap_opp *temp_opp;
 
 	mpu_dev = omap2_get_mpuss_device();
 	
@@ -335,11 +341,17 @@ static ssize_t overclock_show(struct kobject *kobj,
 	if ( attr == &overclock_opp4_attr) {
 	    target_opp_nr = 3;
 	}
+	if ( attr == &overclock_opp5_attr) {
+	    target_opp_nr = 4;
+	}
 	//Find opp (1 MHZ steps)
 	counter = 0;
 	for (freq = 0; counter < (target_opp_nr+1); freq += (1000*1000)) {
 	    if(!IS_ERR(opp_find_freq_exact(mpu_dev, freq, true)))
 	        counter++;
+	    //Show frequency even if OPP is disabled
+	    if(!IS_ERR(opp_find_freq_exact(mpu_dev, freq, false)))
+		counter++;
 	}
   
 	if(freq == 0)
@@ -387,6 +399,11 @@ static ssize_t overclock_store(struct kobject *k,
 	if ( attr == &overclock_opp4_attr) {
 	    target_opp_nr = 3;
 	    opp_lower_limit = 901;
+	    opp_upper_limit = 1100;
+	}
+	if ( attr == &overclock_opp5_attr) {
+	    target_opp_nr = 4;
+	    opp_lower_limit = 1101;
 	    opp_upper_limit = 1500;
 	}
 	// Find opp (1 MHZ steps)
@@ -425,7 +442,7 @@ static ssize_t overclock_store(struct kobject *k,
 	        if(target_opp_nr == 0) { 
 	            mpu_policy->cpuinfo.min_freq = freq/1000;
 	        }
-	        if(target_opp_nr == 3) {
+	        if(target_opp_nr == 4) {
 	            mpu_policy->cpuinfo.max_freq = freq/1000;
 	        }
 

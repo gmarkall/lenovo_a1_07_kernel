@@ -73,13 +73,15 @@ static struct kobj_attribute overclock_vdd_opp3_attr =
     __ATTR(overclock_vdd_opp3, 0644, overclock_vdd_show, overclock_vdd_store);
 static struct kobj_attribute overclock_vdd_opp4_attr =
     __ATTR(overclock_vdd_opp4, 0644, overclock_vdd_show, overclock_vdd_store);
+static struct kobj_attribute overclock_vdd_opp5_attr =
+    __ATTR(overclock_vdd_opp5, 0644, overclock_vdd_show, overclock_vdd_store);
 
 static ssize_t overclock_vdd_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
 	unsigned int target_opp;
-	unsigned long *vdd = -1;
-	unsigned long *temp_vdd = -1;
+	unsigned long *current_volt = 0;
+	unsigned long *temp_volt = 0;
 	char *voltdm_name = "mpu";
 	struct device *mpu_dev = omap2_get_mpuss_device();
 	struct cpufreq_frequency_table *mpu_freq_table = *omap_pm_cpu_get_freq_table();
@@ -102,17 +104,21 @@ static ssize_t overclock_vdd_show(struct kobject *kobj,
 	if ( attr == &overclock_vdd_opp4_attr) {
 	    target_opp = 3;
 	}
+	if ( attr == &overclock_vdd_opp5_attr) {
+	    target_opp = 4;
+	}
 
 	temp_opp = opp_find_freq_exact(mpu_dev, mpu_freq_table[target_opp].frequency*1000, true);
 	if(IS_ERR(temp_opp))
 	    return -EINVAL;
 
-	temp_vdd = opp_get_voltage(temp_opp);
-	mpu_voltdm = omap_voltage_domain_get(voltdm_name);
-	mpu_voltdata = omap_voltage_get_voltdata(mpu_voltdm, temp_vdd);
-	vdd = mpu_voltdata->volt_nominal;
+//	temp_volt = opp_get_voltage(temp_opp);
+//	mpu_voltdm = omap_voltage_domain_get(voltdm_name);
+//	mpu_voltdata = omap_voltage_get_voltdata(mpu_voltdm, temp_volt);
+//	current_volt = mpu_voltdata->volt_nominal;
+	current_volt = opp_get_voltage(temp_opp);
 
-	return sprintf(buf, "%lu\n", vdd);
+	return sprintf(buf, "%lu\n", current_volt);
 }
 
 static ssize_t overclock_vdd_store(struct kobject *k,
@@ -194,6 +200,11 @@ static int __init omap2_common_pm_init(void)
 	    return error;
 	}
 	error = sysfs_create_file(power_kobj, &overclock_vdd_opp4_attr.attr);
+	if (error) {
+	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
+	    return error;
+	}
+	error = sysfs_create_file(power_kobj, &overclock_vdd_opp5_attr.attr);
 	if (error) {
 	    printk(KERN_ERR "sysfs_create_file failed: %d\n", error);
 	    return error;
