@@ -383,7 +383,7 @@ static ssize_t overclock_store(struct kobject *k,
 	// Hard coded clock limits
 	if ( attr == &overclock_opp1_attr) {
 	    target_opp_nr = 0;
-	    opp_lower_limit = 100;
+	    opp_lower_limit = 200;
 	    opp_upper_limit = 500;
 	}
 	if ( attr == &overclock_opp2_attr) {
@@ -404,7 +404,7 @@ static ssize_t overclock_store(struct kobject *k,
 	if ( attr == &overclock_opp5_attr) {
 	    target_opp_nr = 4;
 	    opp_lower_limit = 1101;
-	    opp_upper_limit = 1500;
+	    opp_upper_limit = 1300;
 	}
 	// Find opp (1 MHZ steps)
 	counter = 0;
