@@ -43,7 +43,7 @@ static int wifi_v18io_power_enable_init(void)
 {
 	int return_value = 0;
 	
-	//printk(">>> wifi_v18io_power_enable_init\n");
+	printk(">>> wifi_v18io_power_enable_init\n");
 	
 #ifdef CONFIG_WLAN_POWER_EVT1
 	printk("Enabling VAUX for wifi \n");
@@ -54,7 +54,7 @@ static int wifi_v18io_power_enable_init(void)
 		printk("Enabling VAUX for wifi incomplete error: %d\n",return_value);
 #endif
 	
-	//printk("<<< wifi_v18io_power_enable_init\n");
+	printk("<<< wifi_v18io_power_enable_init\n");
 	return return_value;
 }
 #endif
@@ -62,7 +62,7 @@ static int wifi_v18io_power_enable_init(void)
 
 int omap_wifi_status_register(void (*callback)(int card_present, void *dev_id), void *dev_id)
 {
-	//printk(">>> omap_wifi_status_register\n");
+	printk(">>> omap_wifi_status_register\n");
 	
 	if (wifi_status_cb)
 		return -EAGAIN;
@@ -70,19 +70,19 @@ int omap_wifi_status_register(void (*callback)(int card_present, void *dev_id), 
 	wifi_status_cb = callback;
 	wifi_status_cb_devid = dev_id;
 	
-	//printk("<<< omap_wifi_status_register\n");
+	printk("<<< omap_wifi_status_register\n");
 	return 0;
 }
 
 int omap_wifi_status(int irq)
 {
-	//printk("irq: %d, evt_wifi_cd: %d\n", irq, evt_wifi_cd);
+	printk("irq: %d, evt_wifi_cd: %d\n", irq, evt_wifi_cd);
 	return evt_wifi_cd;
 }
 
 int evt_wifi_set_carddetect(int val)
 {
-	//printk(">>> evt_wifi_set_carddetect, val: %d\n", val);
+	printk(">>> evt_wifi_set_carddetect, val: %d\n", val);
 	
 	evt_wifi_cd = val;
 	if (wifi_status_cb)
@@ -90,7 +90,7 @@ int evt_wifi_set_carddetect(int val)
 	else
 		printk("%s: Nobody to notify\n", __func__);
 	
-	//printk("<<< evt_wifi_set_carddetect\n");
+	printk("<<< evt_wifi_set_carddetect\n");
 	return 0;
 }
 #ifndef CONFIG_WIFI_CONTROL_FUNC
@@ -101,16 +101,17 @@ static int evt_wifi_power_state;
 
 int evt_wifi_power(int on)
 {
-	// pr_info("%s: %d\n", __func__, on);
-	//printk(">>> evt_wifi_power, on: %d\n", on);
+	 pr_info("%s: %d\n", __func__, on);
+	printk(">>> evt_wifi_power, on: %d\n", on);
 
 #ifndef CONFIG_WIRELESS_BCM4329	
+	printk(">>> evt_wifi_powe setting gpio\n");
 	gpio_set_value(EVT_WIFI_PMENA_GPIO, on);
 #endif
 
 	evt_wifi_power_state = on;
 	
-	//printk("<<< evt_wifi_power\n");
+	printk("<<< evt_wifi_power\n");
 	return 0;
 }
 #ifndef CONFIG_WIFI_CONTROL_FUNC
@@ -120,8 +121,8 @@ EXPORT_SYMBOL(evt_wifi_power);
 static int evt_wifi_reset_state;
 int evt_wifi_reset(int on)
 {
-	// pr_info("%s: %d\n", __func__, on);
-	//printk(">>> evt_wifi_reset, on: %d\n", on);
+	pr_info("%s: %d\n", __func__, on);
+	printk(">>> evt_wifi_reset, on: %d\n", on);
 	evt_wifi_reset_state = on;
 	return 0;
 }
@@ -165,8 +166,8 @@ static int __init evt_wifi_init(void)
 {
 	int ret;
 
-	// pr_info("%s: start\n", __func__);
-	//printk(">>> evt_wifi_init\n");
+	pr_info("%s: start\n", __func__);
+	printk(">>> evt_wifi_init\n");
 
 #ifndef CONFIG_WIRELESS_BCM4329	
 	ret = gpio_request(EVT_WIFI_IRQ_GPIO, "wifi_irq");
@@ -186,7 +187,7 @@ static int __init evt_wifi_init(void)
 	
 	ret = gpio_request(EVT_WIFI_ENPOW_GPIO, "wifi_en_pow");
 	if (ret < 0) {
-		//printk(KERN_ERR "%s: can't reserve GPIO: %d\n", __func__,
+		printk(KERN_ERR "%s: can't reserve GPIO: %d\n", __func__,
 			EVT_WIFI_ENPOW_GPIO);
 		gpio_free(EVT_WIFI_ENPOW_GPIO);
 		goto out;
@@ -205,7 +206,7 @@ static int __init evt_wifi_init(void)
 #ifndef CONFIG_WIRELESS_BCM4329
 out:
 #endif
-	//printk("<<< evt_wifi_init\n");
+	printk("<<< evt_wifi_init\n");
 	return ret;
 }
 
