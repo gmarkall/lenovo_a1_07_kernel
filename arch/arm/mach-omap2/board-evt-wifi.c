@@ -14,6 +14,8 @@
 	
 #include <linux/wifi_tiwlan.h>
 
+#define GPIO_WL_RST_EN 158
+
 #ifdef CONFIG_WLAN_POWER_EVT1
 #include <linux/i2c/twl.h>
 
@@ -103,6 +105,8 @@ int evt_wifi_power(int on)
 {
 	 pr_info("%s: %d\n", __func__, on);
 	printk(">>> evt_wifi_power, on: %d\n", on);
+        gpio_direction_output(GPIO_WL_RST_EN, on);
+        mdelay(200);
 
 #ifndef CONFIG_LENOVO_BCM4329	
 	printk(">>> evt_wifi_powe setting gpio\n");
@@ -168,6 +172,14 @@ static int __init evt_wifi_init(void)
 
 	pr_info("%s: start\n", __func__);
 	printk(">>> evt_wifi_init\n");
+
+        ret = gpio_request(GPIO_WL_RST_EN, "wl_rst_en");
+        if (ret < 0) {
+            printk("reserving GPIO for wl_rst_en failed\n");
+        }
+        // Off initially
+        gpio_direction_output(GPIO_WL_RST_EN, 0);
+        mdelay(200);
 
 #ifndef CONFIG_LENOVO_BCM4329	
 	ret = gpio_request(EVT_WIFI_IRQ_GPIO, "wifi_irq");

@@ -49,8 +49,8 @@ config RFKILL_LEDS
 	depends on RFKILL && LEDS_TRIGGERS
 	default y
 
-config WIRELESS_BCM4329
-	bool "Enable Broadcom 4329 3in1 chip"
+config LENOVO_BCM4329
+	bool "Enable Lenovo-specific Broadcom 4329 3in1 chip settings"
 	depends on RFKILL
 	default y
 	
