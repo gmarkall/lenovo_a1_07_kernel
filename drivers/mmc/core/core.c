@@ -1487,7 +1487,7 @@ int mmc_suspend_host(struct mmc_host *host)
 		if (host->bus_ops->suspend)
 			err = host->bus_ops->suspend(host);
 				//&*&*&*JohWan1 BCM4329 wifi module
-				#ifdef CONFIG_WIRELESS_BCM4329
+				#ifdef CONFIG_LENOVO_BCM4329
 			 	if (host->index == 2)	
 			 	{	 
 					/*
@@ -1561,7 +1561,7 @@ int mmc_resume_host(struct mmc_host *host)
 					    "(card was removed?)\n",
 					    mmc_hostname(host), err);
 			//&*&*&*JohWan1 BCM4329 wifi module
-			#ifdef CONFIG_WIRELESS_BCM4329
+			#ifdef CONFIG_LENOVO_BCM4329
 			if (host->index == 2)	
 			{	
 				printk("Simply remove the card if resume error\n");

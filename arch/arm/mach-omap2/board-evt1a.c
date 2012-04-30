@@ -38,13 +38,13 @@
 #include "sdram-elpida-pop-edk4332c2pb.h"
 #endif
 
-#define CONFIG_WIRELESS_BCM4329_RFKILL  1
+#define CONFIG_LENOVO_BCM4329_RFKILL  1
 
-#ifdef CONFIG_WIRELESS_BCM4329
+#ifdef CONFIG_LENOVO_BCM4329
 #include <linux/fxn-rfkill.h>
 #endif
 
-#ifdef CONFIG_WIRELESS_BCM4329_RFKILL
+#ifdef CONFIG_LENOVO_BCM4329_RFKILL
 static struct fxn_rfkill_platform_data fxn_plat_data = {
       .wifi_bt_pwr_en_gpio = FXN_GPIO_WL_BT_POW_EN,      /* WiFi/BT power enable GPIO */
 	.wifi_reset_gpio = FXN_GPIO_WL_RST_N,   		/* WiFi reset GPIO */
@@ -265,7 +265,7 @@ static void __init omap_evt_init(void)
         //omap_mux_init_gpio(64, OMAP_PIN_OUTPUT);
         usb_ehci_init(&ehci_pdata);
         
-#ifdef CONFIG_WIRELESS_BCM4329_RFKILL
+#ifdef CONFIG_LENOVO_BCM4329_RFKILL
         conn_add_plat_device();
 #endif
         

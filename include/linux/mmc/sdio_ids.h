@@ -40,7 +40,7 @@
 #define SDIO_DEVICE_ID_TI_WL12xx       0x9066
 #endif
 
-#ifdef CONFIG_WIRELESS_BCM4329
+#ifdef CONFIG_LENOVO_BCM4329
 #define SDIO_VENDOR_ID_BCM43X9      0x02d0
 #define SDIO_DEVICE_ID_BCM43X9      0x4329
 #endif

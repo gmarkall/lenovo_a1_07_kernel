@@ -17,7 +17,7 @@
 #ifdef CONFIG_WLAN_POWER_EVT1
 #include <linux/i2c/twl.h>
 
-#ifndef CONFIG_WIRELESS_BCM4329
+#ifndef CONFIG_LENOVO_BCM4329
 #define EVT_WIFI_IRQ_GPIO		15
 #define EVT_WIFI_ENPOW_GPIO		16
 #define EVT_WIFI_PMENA_GPIO		22
@@ -38,7 +38,7 @@ static int evt_wifi_cd;		/* WIFI virtual 'card detect' status */
 static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
 
-#ifndef CONFIG_WIRELESS_BCM4329
+#ifndef CONFIG_LENOVO_BCM4329
 static int wifi_v18io_power_enable_init(void)
 {
 	int return_value = 0;
@@ -104,7 +104,7 @@ int evt_wifi_power(int on)
 	 pr_info("%s: %d\n", __func__, on);
 	printk(">>> evt_wifi_power, on: %d\n", on);
 
-#ifndef CONFIG_WIRELESS_BCM4329	
+#ifndef CONFIG_LENOVO_BCM4329	
 	printk(">>> evt_wifi_powe setting gpio\n");
 	gpio_set_value(EVT_WIFI_PMENA_GPIO, on);
 #endif
@@ -137,7 +137,7 @@ struct wifi_platform_data evt_wifi_control = {
 };
 
 #ifdef CONFIG_WIFI_CONTROL_FUNC
-#ifndef CONFIG_WIRELESS_BCM4329
+#ifndef CONFIG_LENOVO_BCM4329
 static struct resource evt_wifi_resources[] = {
 	[0] = {
 		.name		= "device_wifi_irq",
@@ -152,7 +152,7 @@ static struct resource evt_wifi_resources[] = {
 static struct platform_device evt_wifi_device = {
 	.name		= "device_wifi",
 	.id		= 1,
-#ifndef CONFIG_WIRELESS_BCM4329
+#ifndef CONFIG_LENOVO_BCM4329
 	.num_resources	= ARRAY_SIZE(evt_wifi_resources),
 	.resource	= evt_wifi_resources,
 #endif
@@ -169,7 +169,7 @@ static int __init evt_wifi_init(void)
 	pr_info("%s: start\n", __func__);
 	printk(">>> evt_wifi_init\n");
 
-#ifndef CONFIG_WIRELESS_BCM4329	
+#ifndef CONFIG_LENOVO_BCM4329	
 	ret = gpio_request(EVT_WIFI_IRQ_GPIO, "wifi_irq");
 	if (ret < 0) {
 		pr_err("%s: can't reserve GPIO: %d\n", __func__,
@@ -203,7 +203,7 @@ static int __init evt_wifi_init(void)
 	ret = platform_device_register(&evt_wifi_device);
 #endif
 	
-#ifndef CONFIG_WIRELESS_BCM4329
+#ifndef CONFIG_LENOVO_BCM4329
 out:
 #endif
 	printk("<<< evt_wifi_init\n");
