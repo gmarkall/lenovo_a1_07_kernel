@@ -2026,10 +2026,6 @@ static void omap_hsmmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 }
 
 #ifdef CONFIG_TIWLAN_SDIO
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-extern int dhd_fxn_rfkill_resume(void);
-#endif
 static void omap_hsmmc_status_notify_cb(int card_present, void *dev_id)
 {
        struct omap_hsmmc_host *host = dev_id;
@@ -2038,11 +2034,6 @@ static void omap_hsmmc_status_notify_cb(int card_present, void *dev_id)
 
        printk(KERN_DEBUG "%s: card_present %d\n", mmc_hostname(host->mmc),
 		card_present);
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-	if ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0)
-		dhd_fxn_rfkill_resume();
-#endif
 
        carddetect = slot->card_detect(host->dev, host->slot_id);
 

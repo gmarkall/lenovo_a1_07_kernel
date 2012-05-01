@@ -1461,10 +1461,7 @@ EXPORT_SYMBOL(mmc_card_can_sleep);
  *	mmc_suspend_host - suspend a host
  *	@host: mmc host
  */
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
- extern int dhd_fxn_rfkill_suspend(void);
-#endif
+
 int mmc_suspend_host(struct mmc_host *host)
 {
 	int err = 0;
@@ -1497,10 +1494,6 @@ int mmc_suspend_host(struct mmc_host *host)
 			 		printk("Simply remove the card in suspend\n");
 					if (host->bus_ops->remove)
 						host->bus_ops->remove(host);
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-			      dhd_fxn_rfkill_suspend();					//??? no any improvement
-#endif
 					mmc_claim_host(host);
 					mmc_detach_bus(host);
 					mmc_release_host(host);
