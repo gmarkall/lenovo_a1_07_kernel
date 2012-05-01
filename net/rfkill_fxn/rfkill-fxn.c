@@ -1,7 +1,6 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/gpio.h>
-// #include <linux/rfkill.h>
 #include <linux/platform_device.h>
 #include <linux/device.h>
 
@@ -16,7 +15,6 @@
 #endif
 #define CONFIG_RFKILL_GPS_RESET
 #define CONFIG_RFKILL_GPS_STANDBY
-//#define CONFIG_UART_SW
 
 // Ellis+
 #ifdef CONFIG_RFKILL_WIFI
@@ -69,8 +67,6 @@ static int toggled_on_bt = 0;
 	
 static int fxn_rfkill_set_power_bt(void *data, enum rfkill_state state)
 {
-	// int _gpio = (int)data;
-
 	// printk(">>> fxn_rfkill_set_power_bt, GPIO: %d, state: %d\n", _gpio, state);
 	//printk(">>> fxn_rfkill_set_power_bt\n");
 	
@@ -83,10 +79,6 @@ static int fxn_rfkill_set_power_bt(void *data, enum rfkill_state state)
            gpio_direction_output(FXN_GPIO_BT_RST_N, 0);
       	   mdelay(100);
            
-/*
-	      printk("  UART1_SW to low\n");
-	      gpio_direction_output(FXN_GPIO_UART1_SW, 0);
-*/
 		break;
 
 	case RFKILL_STATE_UNBLOCKED:  // 1
@@ -94,10 +86,6 @@ static int fxn_rfkill_set_power_bt(void *data, enum rfkill_state state)
            gpio_direction_output(FXN_GPIO_BT_RST_N, 1);
       	   mdelay(100);
            
-/*
-	      printk("  UART1_SW to high\n");
-	      gpio_direction_output(FXN_GPIO_UART1_SW, 1);
-*/
 		break;
 		
 	case RFKILL_STATE_HARD_BLOCKED:  // 2
@@ -116,42 +104,9 @@ static int fxn_rfkill_set_power_bt(void *data, enum rfkill_state state)
 	
 #ifdef CONFIG_RFKILL_GPS
 static int toggled_on_gps = 0;
-/*	
-static int fxn_rfkill_set_power_gps(void *data, enum rfkill_state state)
-{
-	// int _gpio = (int)data;
-	printk(">>> fxn_rfkill_set_power_gps\n");
-	
-	printk("  toggled_on_gps to %d\n", (int)state);
-        toggled_on_gps = (int)state;
-	
-	switch (state) {
-	case RFKILL_STATE_SOFT_BLOCKED:  // 0
-           printk("  GPS_RST 0 -> 1\n");
-	     gpio_direction_output(FXN_GPIO_GPS_RST, 0);
-	     msleep(100);
-	     gpio_direction_output(FXN_GPIO_GPS_RST, 1);
-		break;
-		
-	case RFKILL_STATE_UNBLOCKED:  // 1
-           printk("  GPS_ON_OFF 1 -> 0\n");
-	     gpio_direction_output(FXN_GPIO_GPS_ON_OFF, 1);
-	     msleep(100);
-	     gpio_direction_output(FXN_GPIO_GPS_ON_OFF, 0);
-		break;
-		
-	default:
-		printk(KERN_ERR "invalid rfkill state %d\n", state);
-	}
-	
-	printk("<<< fxn_rfkill_set_power_gps\n");
-	return 0;
-}*/
-
 	
 static int fxn_rfkill_set_gps_reset(void *data, enum rfkill_state state)
 {
-	// int _gpio = (int)data;
 	//printk(">>> fxn_rfkill_set_reset_gps\n");
 	
 	printk("  toggled_on_gps to %d\n", (int)state);
@@ -182,7 +137,6 @@ static int fxn_rfkill_set_gps_reset(void *data, enum rfkill_state state)
 
 static int fxn_rfkill_set_gps_standby(void *data, enum rfkill_state state)
 {
-	// int _gpio = (int)data;
 	printk(">>> fxn_rfkill_set_standby_gps\n");
 	
 	printk("  toggled_on_gps to %d\n", (int)state);
@@ -296,7 +250,6 @@ static int fxn_rfkill_probe(struct platform_device *pdev)
 		
 	#ifdef FXN_GPIO_GPS_PWR_EN
 	 if (pdata->gps_pwr_en_gpio >= 0) 
-	// rfkill_set_default(RFKILL_TYPE_GPS, RFKILL_STATE_SOFT_BLOCKED);
        // GPS_PWR_EN
            printk("  GPS_PWR_EN to high\n");
            gpio_direction_output(FXN_GPIO_GPS_PWR_EN, 1);
@@ -443,7 +396,6 @@ static int fxn_rfkill_suspend(struct platform_device  *pdev, pm_message_t state)
     printk(">>> fxn_rfkill_suspend, state.event= %d\n", state.event);
 	gpio_direction_output(FXN_GPIO_GPS_RST, 0);
 	     
-//	     gpio_direction_output(FXN_GPIO_GPS_ON_OFF, 0);
 #ifdef CONFIG_RFKILL_WIFI
     if (toggled_on_wifi == 1)
     {
@@ -466,9 +418,7 @@ int dhd_fxn_rfkill_suspend(void)
 {
     if (rfkill_suspend_state == 1)	//suspend
 		return 0;
-	//gpio_direction_output(FXN_GPIO_GPS_RST, 0);
 	     
-//	     gpio_direction_output(FXN_GPIO_GPS_ON_OFF, 0);
 #ifdef CONFIG_RFKILL_WIFI
     if (toggled_on_wifi == 1)
     {
@@ -485,8 +435,6 @@ EXPORT_SYMBOL_GPL(dhd_fxn_rfkill_suspend);
 
 int dhd_fxn_rfkill_resume(void)
 {
-//       if (rfkill_suspend_state == 2)	//resume
-//		return 0;	
     
 #ifdef CONFIG_RFKILL_WIFI
     if (toggled_on_wifi == 1)
@@ -585,5 +533,4 @@ module_exit(fxn_rfkill_exit);
 
 MODULE_ALIAS("platform: TI OMAP 3622");
 MODULE_DESCRIPTION("rfkill-fxn");
-// MODULE_AUTHOR("Motorola");
 MODULE_LICENSE("GPL");
