@@ -1591,11 +1591,6 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 		notify_block, struct mmc_host, pm_notify);
 	unsigned long flags;
 
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-	if (host->index == 2) 
-		return 0;
-#endif
 	switch (mode) {
 	case PM_HIBERNATION_PREPARE:
 	case PM_SUSPEND_PREPARE:
@@ -1638,57 +1633,7 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 
 	return 0;
 }
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 manual mmc_pm_notify in early_suspend stage for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-int mmc_pm_notify_imitation(struct mmc_host *host, unsigned long mode)
-{
-	unsigned long flags;
 
-	if (host->index != 2) 
-		return 0;
-	switch (mode) {
-	case PM_HIBERNATION_PREPARE:
-	case PM_SUSPEND_PREPARE:
-
-		spin_lock_irqsave(&host->lock, flags);
-		if (mmc_bus_needs_resume(host)) {
-			spin_unlock_irqrestore(&host->lock, flags);
-			break;
-		}
-		host->rescan_disable = 1;
-		spin_unlock_irqrestore(&host->lock, flags);
-		cancel_delayed_work_sync(&host->detect);
-
-		if (!host->bus_ops || host->bus_ops->suspend)
-			break;
-
-		mmc_claim_host(host);
-
-		if (host->bus_ops->remove)
-			host->bus_ops->remove(host);
-
-		mmc_detach_bus(host);
-		mmc_release_host(host);
-		host->pm_flags = 0;
-		break;
-
-	case PM_POST_SUSPEND:
-	case PM_POST_HIBERNATION:
-
-		spin_lock_irqsave(&host->lock, flags);
-		if (mmc_bus_manual_resume(host)) {
-			spin_unlock_irqrestore(&host->lock, flags);
-			break;
-		}
-		host->rescan_disable = 0;
-		spin_unlock_irqrestore(&host->lock, flags);
-		mmc_detect_change(host, 0);
-
-	}
-
-	return 0;
-}
-#endif
 #endif
 
 #ifdef CONFIG_TIWLAN_SDIO

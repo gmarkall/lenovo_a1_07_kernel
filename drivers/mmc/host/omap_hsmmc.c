@@ -243,10 +243,6 @@ struct omap_hsmmc_host {
 //&*&*&*HC2_20110718, Add SD In/Out wakeup	
 };
 
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-int mmc2_suspend_state=0;		//0: none; 1: suspend; 2:resume; 
-#endif
 static int omap_hsmmc_card_detect(struct device *dev, int slot)
 {
 	struct omap_mmc_platform_data *mmc = dev->platform_data;
@@ -2542,12 +2538,6 @@ static int hsmmc_dpll_notifier(struct notifier_block *nb,
 //&*&*&*HC1_20110718, Add SD In/Out wakeup
 #if defined (CONFIG_SD_CARD_WAKEUP) 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-static int omap_hsmmc_suspend_mmc2(struct device *dev);
-static int omap_hsmmc_resume_mmc2(struct device *dev);
-extern int mmc_pm_notify_imitation(struct mmc_host *host, unsigned long mode);
-#endif
 static void omap_hsmmc_early_suspend(struct early_suspend *handler)
 {
 	struct omap_hsmmc_host	*host;
@@ -2555,17 +2545,6 @@ static void omap_hsmmc_early_suspend(struct early_suspend *handler)
 	host = container_of(handler, struct omap_hsmmc_host, early_suspend);
 	host->enter_early_suspend = 1;
 	//printk("Enter %s.\n", __FUNCTION__);
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-	if (mmc2_suspend_state == 1)	//suspend
-		return;
-	if ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0)
-		{
-		mmc_pm_notify_imitation(host->mmc, PM_SUSPEND_PREPARE);
-		omap_hsmmc_suspend_mmc2(host->dev);
-	       mmc2_suspend_state = 1;		
-		}
-#endif
 }
 
 static void omap_hsmmc_late_resume(struct early_suspend *handler)
@@ -2575,19 +2554,10 @@ static void omap_hsmmc_late_resume(struct early_suspend *handler)
 	host = container_of(handler, struct omap_hsmmc_host, early_suspend);
 	host->enter_early_suspend = 0;
 	host->wakeup_event = 0;
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-       if   ( (mmc2_suspend_state == 1) && ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0) )	//suspend already
-		{
-		omap_hsmmc_resume_mmc2(host->dev);
-		msleep(100);
-		mmc_pm_notify_imitation(host->mmc, PM_POST_SUSPEND);
-		mmc2_suspend_state = 2;		
-		}
-#endif
 }
 #endif
 #endif
+
 //&*&*&*HC2_20110718, Add SD In/Out wakeup
 static int __init omap_hsmmc_probe(struct platform_device *pdev)
 {
@@ -3024,10 +2994,6 @@ static int omap_hsmmc_suspend(struct device *dev)
 	struct platform_device *pdev = to_platform_device(dev);
 	struct omap_hsmmc_host *host = platform_get_drvdata(pdev);
 
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-    if   ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0)	//suspend
-		return 0;
-#endif
 	if (host && host->suspended)
 		return 0;
 
@@ -3095,10 +3061,6 @@ static int omap_hsmmc_resume(struct device *dev)
 	struct platform_device *pdev = to_platform_device(dev);
 	struct omap_hsmmc_host *host = platform_get_drvdata(pdev);
 
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-       if ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0) 	//resume
-		return 0;	
-#endif
 	if (host && !host->suspended)
 		return 0;
 
@@ -3138,132 +3100,12 @@ clk_en_err:
 		"Failed to enable MMC clocks during resume\n");
 	return ret;
 }
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-static int omap_hsmmc_suspend_mmc2(struct device *dev)
-{
-	int ret = 0;
-	struct platform_device *pdev = to_platform_device(dev);
-	struct omap_hsmmc_host *host = platform_get_drvdata(pdev);
-
-    if   ( (mmc2_suspend_state == 1) && ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0) )	//suspend
-		return 0;
-
-	if (host && host->suspended)
-		{
-		return 0;
-		}
-
-	if (host) {
-		host->suspended = 1;
-//&*&*&*HC1_20110803, Modify for early suspend blocking issue
-#if defined (CONFIG_SD_CARD_WAKEUP)
-		host->enter_early_suspend = 0;	
-#endif
-//&*&*&*HC2_20110803, Modify for early suspend blocking issue
-//	if ( strcmp(mmc_hostname(host->mmc), "mmc2") != 0)
-		if (host->pdata->suspend) {
-			ret = host->pdata->suspend(&pdev->dev,
-							host->slot_id);
-			if (ret) {
-				dev_dbg(mmc_dev(host->mmc),
-					"Unable to handle MMC board"
-					" level suspend\n");
-				host->suspended = 0;
-				return ret;
-			}
-		}
-//&*&*&*HC1_20110803, Modify for early suspend blocking issue
-#if defined (CONFIG_SD_CARD_WAKEUP)
-		cancel_delayed_work_sync(&host->mmc_carddetect_work);
-#else
-		cancel_work_sync(&host->mmc_carddetect_work);
-#endif
-//&*&*&*HC2_20110803, Modify for early suspend blocking issue
-		mmc_host_enable(host->mmc);
-		ret = mmc_suspend_host(host->mmc);
-		if (ret == 0) {
-			omap_hsmmc_disable_irq(host);
-			OMAP_HSMMC_WRITE(host, HCTL,
-				OMAP_HSMMC_READ(host, HCTL) & ~SDBP);
-			mmc_host_disable(host->mmc);
-
-			if (host->got_dbclk)
-				clk_disable(host->dbclk);
-		} else {
-			host->suspended = 0;
-			if (host->pdata->resume) {
-				ret = host->pdata->resume(&pdev->dev,
-							  host->slot_id);
-				if (ret)
-					dev_dbg(mmc_dev(host->mmc),
-						"Unmask interrupt failed\n");
-			}
-
-			/*
-			 * Directly call platform_bus suspend. runtime PM
-			 * PM lock is held during system suspend, so will
-			 * not be auto-matically called
-			 */
-			mmc_host_disable(host->mmc);
-		}
-
-	}
-	return ret;
-}
-
-/* Routine to resume the MMC device */
-static int omap_hsmmc_resume_mmc2(struct device *dev)
-{
-	int ret = 0;
-	struct platform_device *pdev = to_platform_device(dev);
-	struct omap_hsmmc_host *host = platform_get_drvdata(pdev);
-
-       if ((mmc2_suspend_state == 2) && ( strcmp(mmc_hostname(host->mmc), "mmc2") == 0)) 	//resume
-		return 0;	
-	if (host && !host->suspended)
-		return 0;
-
-	if (host) {
-//&*&*&*BC1_110630: fix mmc read register crash when system resume		
-		host->mmc->nesting_cnt = 0;
-//&*&*&*BC2_110630: fix mmc read register crash when system resume		
-		if (mmc_host_enable(host->mmc) != 0)
-			goto clk_en_err;
-
-		if (host->got_dbclk)
-			clk_enable(host->dbclk);
-
-		omap_hsmmc_conf_bus_power(host);
-
-		if (host->pdata->resume) {
-			ret = host->pdata->resume(&pdev->dev, host->slot_id);
-			if (ret)
-				dev_dbg(mmc_dev(host->mmc),
-					"Unmask interrupt failed\n");
-		}
-
-		omap_hsmmc_protect_card(host);
-
-		/* Notify the core to resume the host */
-		ret = mmc_resume_host(host->mmc);
-		if (ret == 0)
-			host->suspended = 0;
-
-		mmc_host_lazy_disable(host->mmc);
-	}
-
-	return ret;
-
-clk_en_err:
-	dev_dbg(mmc_dev(host->mmc),
-		"Failed to enable MMC clocks during resume\n");
-	return ret;
-}
-#endif
 
 #else
+
 #define omap_hsmmc_suspend	NULL
 #define omap_hsmmc_resume		NULL
+
 #endif
 
 /* called just before device is disabled */
