@@ -434,7 +434,8 @@ static void mmc_sdio_remove(struct mmc_host *host)
 	if(host->index == 2)
 	{
 	
-		for (i = host->card->sdio_funcs;i >= 0 ;i--) {
+                /// Surely this is an off-by 1 error?!
+                for (i = host->card->sdio_funcs;i >= 0 ;i--) {
 			if (host->card->sdio_func[i]) {
 				sdio_remove_func(host->card->sdio_func[i]);
 				host->card->sdio_func[i] = NULL;
