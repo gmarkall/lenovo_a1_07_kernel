@@ -242,28 +242,11 @@ static int nop_mmc_set_power(struct device *dev, int slot, int power_on,
 static struct omap_mmc_platform_data *hsmmc_data[OMAP44XX_NR_MMC] __initdata;
 
 #ifdef CONFIG_TIWLAN_SDIO
-#ifndef CONFIG_LENOVO_BCM4329
-static struct sdio_embedded_func wifi_func_array[] = {
-	{
-		.f_class        = SDIO_CLASS_NONE,
-		.f_maxblksize   = 512,
-	},
-	{
-		.f_class        = SDIO_CLASS_WLAN,
-		.f_maxblksize   = 512,
-	},
-};
-#endif
 
 static struct embedded_sdio_data omap_wifi_emb_data = {
 	.cis    = {
-#ifdef CONFIG_LENOVO_BCM4329
 		.vendor         = SDIO_VENDOR_ID_BCM43X9,
 		.device         = SDIO_DEVICE_ID_BCM43X9,
-#else
-		.vendor         = SDIO_VENDOR_ID_TI,
-		.device         = SDIO_DEVICE_ID_TI_WL12xx,
-#endif
 		.blksize        = 512,
 #ifdef CONFIG_ARCH_OMAP3
 		.max_dtr        = 24000000,
@@ -271,7 +254,6 @@ static struct embedded_sdio_data omap_wifi_emb_data = {
 		.max_dtr        = 48000000,
 #endif
 	},
-#ifdef CONFIG_LENOVO_BCM4329
 	.cccr	= {
 		.sdio_vsn	= 2,
 		.multi_block	= 1,
@@ -280,22 +262,6 @@ static struct embedded_sdio_data omap_wifi_emb_data = {
 		.high_power	= 0,
 		.high_speed	= 0,
 	},
-#else // CONFIG_LENOVO_BCM4329
-	.cccr   = {
-		.multi_block	= 1,
-		.low_speed	= 0,
-		.wide_bus	= 1,
-		.high_power	= 0,
-#ifdef CONFIG_ARCH_OMAP3
-		.high_speed	= 0,
-#else
-		.high_speed	= 1,
-#endif
-		.disable_cd	= 1,
-	},
-	.funcs  = wifi_func_array,
-	.quirks = MMC_QUIRK_VDD_165_195 | MMC_QUIRK_LENIENT_FUNC0,
-#endif // CONFIG_LENOVO_BCM4329
 };
 #endif // CONFIG_TIWLAN_SDIO
 

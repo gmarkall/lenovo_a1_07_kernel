@@ -19,12 +19,6 @@
 #ifdef CONFIG_WLAN_POWER_EVT1
 #include <linux/i2c/twl.h>
 
-#ifndef CONFIG_LENOVO_BCM4329
-#define EVT_WIFI_IRQ_GPIO		15
-#define EVT_WIFI_ENPOW_GPIO		16
-#define EVT_WIFI_PMENA_GPIO		22
-#endif
-
 #define PM_RECEIVER                     TWL4030_MODULE_PM_RECEIVER
 #define ENABLE_VAUX2_DEDICATED          0x05
 #define ENABLE_VAUX2_DEV_GRP            0x20
@@ -39,28 +33,6 @@
 static int evt_wifi_cd;		/* WIFI virtual 'card detect' status */
 static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
-
-#ifndef CONFIG_LENOVO_BCM4329
-static int wifi_v18io_power_enable_init(void)
-{
-	int return_value = 0;
-	
-	printk(">>> wifi_v18io_power_enable_init\n");
-	
-#ifdef CONFIG_WLAN_POWER_EVT1
-	printk("Enabling VAUX for wifi \n");
-	return_value  = t2_out(PM_RECEIVER,ENABLE_VAUX2_DEDICATED,TWL4030_VAUX2_DEDICATED);
-	return_value |= t2_out(PM_RECEIVER,ENABLE_VAUX2_DEV_GRP,TWL4030_VAUX2_DEV_GRP);
-	
-	if(0 != return_value)
-		printk("Enabling VAUX for wifi incomplete error: %d\n",return_value);
-#endif
-	
-	printk("<<< wifi_v18io_power_enable_init\n");
-	return return_value;
-}
-#endif
-
 
 int omap_wifi_status_register(void (*callback)(int card_present, void *dev_id), void *dev_id)
 {
@@ -108,11 +80,6 @@ int evt_wifi_power(int on)
         gpio_direction_output(GPIO_WL_RST_EN, on);
         mdelay(200);
 
-#ifndef CONFIG_LENOVO_BCM4329	
-	printk(">>> evt_wifi_powe setting gpio\n");
-	gpio_set_value(EVT_WIFI_PMENA_GPIO, on);
-#endif
-
 	evt_wifi_power_state = on;
 	
 	printk("<<< evt_wifi_power\n");
@@ -141,25 +108,10 @@ struct wifi_platform_data evt_wifi_control = {
 };
 
 #ifdef CONFIG_WIFI_CONTROL_FUNC
-#ifndef CONFIG_LENOVO_BCM4329
-static struct resource evt_wifi_resources[] = {
-	[0] = {
-		.name		= "device_wifi_irq",
-		.start		= OMAP_GPIO_IRQ(EVT_WIFI_IRQ_GPIO),
-		.end		= OMAP_GPIO_IRQ(EVT_WIFI_IRQ_GPIO),
-		.flags		= IORESOURCE_IRQ | IORESOURCE_IRQ_LOWEDGE,
-	},
-};
-#endif
-	
 
 static struct platform_device evt_wifi_device = {
 	.name		= "device_wifi",
 	.id		= 1,
-#ifndef CONFIG_LENOVO_BCM4329
-	.num_resources	= ARRAY_SIZE(evt_wifi_resources),
-	.resource	= evt_wifi_resources,
-#endif
 	.dev		= {
 		.platform_data = &evt_wifi_control,
 	},
@@ -181,43 +133,10 @@ static int __init evt_wifi_init(void)
         gpio_direction_output(GPIO_WL_RST_EN, 0);
         mdelay(200);
 
-#ifndef CONFIG_LENOVO_BCM4329	
-	ret = gpio_request(EVT_WIFI_IRQ_GPIO, "wifi_irq");
-	if (ret < 0) {
-		pr_err("%s: can't reserve GPIO: %d\n", __func__,
-			EVT_WIFI_IRQ_GPIO);
-		goto out;
-	}
-	
-	ret = gpio_request(EVT_WIFI_PMENA_GPIO, "wifi_pmena");
-	if (ret < 0) {
-		pr_err("%s: can't reserve GPIO: %d\n", __func__,
-			EVT_WIFI_PMENA_GPIO);
-		gpio_free(EVT_WIFI_IRQ_GPIO);
-		goto out;
-	}
-	
-	ret = gpio_request(EVT_WIFI_ENPOW_GPIO, "wifi_en_pow");
-	if (ret < 0) {
-		printk(KERN_ERR "%s: can't reserve GPIO: %d\n", __func__,
-			EVT_WIFI_ENPOW_GPIO);
-		gpio_free(EVT_WIFI_ENPOW_GPIO);
-		goto out;
-	}
-	
-	wifi_v18io_power_enable_init();
-	gpio_direction_input(EVT_WIFI_IRQ_GPIO);
-	gpio_direction_output(EVT_WIFI_PMENA_GPIO, 0);
-	gpio_direction_output(EVT_WIFI_ENPOW_GPIO, 1);
-#endif
-
 #ifdef CONFIG_WIFI_CONTROL_FUNC
 	ret = platform_device_register(&evt_wifi_device);
 #endif
 	
-#ifndef CONFIG_LENOVO_BCM4329
-out:
-#endif
 	printk("<<< evt_wifi_init\n");
 	return ret;
 }
