@@ -16,20 +16,6 @@
 
 #define GPIO_WL_RST_EN 158
 
-#ifdef CONFIG_WLAN_POWER_EVT1
-#include <linux/i2c/twl.h>
-
-#define PM_RECEIVER                     TWL4030_MODULE_PM_RECEIVER
-#define ENABLE_VAUX2_DEDICATED          0x05
-#define ENABLE_VAUX2_DEV_GRP            0x20
-#define ENABLE_VAUX3_DEDICATED          0x03
-#define ENABLE_VAUX3_DEV_GRP            0x20
-
-#define t2_out(c, r, v) twl_i2c_write_u8(c, r, v)
-
-#define t2_out(c, r, v) twl_i2c_write_u8(c, r, v)
-#endif
-
 static int evt_wifi_cd;		/* WIFI virtual 'card detect' status */
 static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
@@ -78,7 +64,7 @@ int evt_wifi_power(int on)
 	 pr_info("%s: %d\n", __func__, on);
 	printk(">>> evt_wifi_power, on: %d\n", on);
         gpio_direction_output(GPIO_WL_RST_EN, on);
-        mdelay(200);
+        msleep(300);
 
 	evt_wifi_power_state = on;
 	
@@ -131,7 +117,7 @@ static int __init evt_wifi_init(void)
         }
         // Off initially
         gpio_direction_output(GPIO_WL_RST_EN, 0);
-        mdelay(200);
+        msleep(300);
 
 #ifdef CONFIG_WIFI_CONTROL_FUNC
 	ret = platform_device_register(&evt_wifi_device);
