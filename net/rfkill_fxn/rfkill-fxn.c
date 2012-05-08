@@ -10,9 +10,6 @@
 //&*&*&*BC1_110513:add the wifi suspend wakelock to avoid wifi or system crash
 #include <linux/wakelock.h>
 //&*&*&*BC2_110513:add the wifi suspend wakelock to avoid wifi or system crash
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-#include <linux/earlysuspend.h>
-#endif
 #define CONFIG_RFKILL_GPS_RESET
 #define CONFIG_RFKILL_GPS_STANDBY
 
@@ -23,10 +20,6 @@ static struct wake_lock wifi_lock;
 //&*&*&*BC2_110513:add the wifi suspend wakelock to avoid wifi or system crash
 static int toggled_on_wifi = 0;
 /* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-struct early_suspend rfkill_early_suspend;
-int rfkill_suspend_state=0;		//0: none; 1: suspend; 2:resume; 
-#endif
 	
 static int fxn_rfkill_set_power_wifi(void *data, enum rfkill_state state)
 {
@@ -388,11 +381,6 @@ static int fxn_rfkill_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM
 static int fxn_rfkill_suspend(struct platform_device  *pdev, pm_message_t state)
 {
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-    if (rfkill_suspend_state == 1)	//suspend
-		return 0;
-#endif
     printk(">>> fxn_rfkill_suspend, state.event= %d\n", state.event);
 	gpio_direction_output(FXN_GPIO_GPS_RST, 0);
 	     
@@ -404,59 +392,12 @@ static int fxn_rfkill_suspend(struct platform_device  *pdev, pm_message_t state)
     }
 #endif
     
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-    rfkill_suspend_state = 1;
-#endif
     //printk("<<< fxn_rfkill_suspend\n");
     return 0;
 }
 
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-int dhd_fxn_rfkill_suspend(void)
-{
-    if (rfkill_suspend_state == 1)	//suspend
-		return 0;
-	     
-#ifdef CONFIG_RFKILL_WIFI
-    if (toggled_on_wifi == 1)
-    {
-	      printk("  WL_RST_N to low\n");
-           gpio_direction_output(FXN_GPIO_WL_RST_N, 0);
-    }
-#endif
-    
-    rfkill_suspend_state = 1;
-    //printk("<<< fxn_rfkill_suspend\n");
-    return 0;
-}
-EXPORT_SYMBOL_GPL(dhd_fxn_rfkill_suspend);
-
-int dhd_fxn_rfkill_resume(void)
-{
-    
-#ifdef CONFIG_RFKILL_WIFI
-    if (toggled_on_wifi == 1)
-    {
-	      printk("  WL_RST_N to high\n");
-           gpio_direction_output(FXN_GPIO_WL_RST_N, 1);
-    }
-#endif
-    
-    rfkill_suspend_state = 2;
-    //printk("<<< fxn_rfkill_resume\n");
-    return 0;
-}
-EXPORT_SYMBOL_GPL(dhd_fxn_rfkill_resume);
-#endif
 static int fxn_rfkill_resume(struct platform_device  *pdev)
 {
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-       if (rfkill_suspend_state == 2)	//resume
-		return 0;	
-#endif
     //printk(">>> fxn_rfkill_resume\n");
 	gpio_direction_output(FXN_GPIO_GPS_RST, 0);
 	msleep(20);
@@ -473,25 +414,11 @@ static int fxn_rfkill_resume(struct platform_device  *pdev)
     }
 #endif
     
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-    rfkill_suspend_state = 2;
-#endif
     //printk("<<< fxn_rfkill_resume\n");
     return 0;
 }
 #endif
 
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-static void rfkill_earlysuspend(struct early_suspend *h)
-{
-}
-
-static void rfkill_late_resume(struct early_suspend *h)
-{
-		dhd_fxn_rfkill_resume();
-}
-#endif
 static struct platform_driver fxn_rfkill_platform_driver = {
 	.probe = fxn_rfkill_probe,
 	.remove = fxn_rfkill_remove,
@@ -508,22 +435,11 @@ static struct platform_driver fxn_rfkill_platform_driver = {
 static int __init fxn_rfkill_init(void)
 {
 	printk("fxn_rfkill_init ENTER\n");
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-	rfkill_early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
-	rfkill_early_suspend.suspend = rfkill_earlysuspend;
-	rfkill_early_suspend.resume = rfkill_late_resume;
-	register_early_suspend(&rfkill_early_suspend);
-#endif	
 	return platform_driver_register(&fxn_rfkill_platform_driver);
 }
 
 static void __exit fxn_rfkill_exit(void)
 {
-/* <-- LH_SWRD_CL1_Henry@2011.8.21 Add rfkill early_suspend for adaptor plug-in  */	
-#ifdef CONFIG_WIRELESS_EARLYSUSPEND
-	unregister_early_suspend(&rfkill_early_suspend);
-#endif
 	//printk("fxn_rfkill_exit ENTER\n");
 	platform_driver_unregister(&fxn_rfkill_platform_driver);
 }
