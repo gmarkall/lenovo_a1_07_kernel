@@ -3023,7 +3023,11 @@ static int omap_hsmmc_suspend(struct device *dev)
 #endif
 //&*&*&*HC2_20110803, Modify for early suspend blocking issue
 		mmc_host_enable(host->mmc);
-		ret = mmc_suspend_host(host->mmc);
+
+                // BCM4329 needs MMC2 during suspend
+                if (host->mmc->index != 2)
+                        ret = mmc_suspend_host(host->mmc);
+
 		if (ret == 0) {
 			omap_hsmmc_disable_irq(host);
 			OMAP_HSMMC_WRITE(host, HCTL,
@@ -3086,7 +3090,10 @@ static int omap_hsmmc_resume(struct device *dev)
 		omap_hsmmc_protect_card(host);
 
 		/* Notify the core to resume the host */
-		ret = mmc_resume_host(host->mmc);
+                // BCM4329 needs MMC2 during suspend
+                if (host->mmc->index != 2)
+		        ret = mmc_resume_host(host->mmc);
+
 		if (ret == 0)
 			host->suspended = 0;
 
