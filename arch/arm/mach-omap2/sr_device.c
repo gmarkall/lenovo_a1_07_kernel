@@ -59,6 +59,35 @@ static struct omap_device_pm_latency omap_sr_latency[] = {
 	},
 };
 
+static void cal_reciprocal(u32 sensor, u32 *sengain, u32 *rnsen)
+{
+	u32 gn, rn, mul;
+
+	for (gn = 0; gn < GAIN_MAXLIMIT; gn++) {
+		mul = 1 << (gn + 8);
+		rn = mul / sensor;
+		if (rn < R_MAXLIMIT) {
+			*sengain = gn;
+			*rnsen = rn;
+		}
+	}
+}
+
+static u32 cal_opp5_nvalue(u32 sennval, u32 senpval)
+{
+	u32 senpgain, senngain;
+	u32 rnsenp, rnsenn;
+
+	/* Calculating the gain and reciprocal of the SenN and SenP values */
+	cal_reciprocal(senpval, &senpgain, &rnsenp);
+	cal_reciprocal(sennval, &senngain, &rnsenn);
+
+	return (senpgain << NVALUERECIPROCAL_SENPGAIN_SHIFT) |
+		(senngain << NVALUERECIPROCAL_SENNGAIN_SHIFT) |
+		(rnsenp << NVALUERECIPROCAL_RNSENP_SHIFT) |
+		(rnsenn << NVALUERECIPROCAL_RNSENN_SHIFT);
+}
+
 /* Read EFUSE values from control registers for OMAP3430 */
 static void __init sr_read_efuse(struct omap_sr_dev_data *dev_data,
 				struct omap_sr_data *sr_data)
@@ -113,8 +142,14 @@ static void __init sr_read_efuse(struct omap_sr_dev_data *dev_data,
 				__raw_readb(ctrl_base + offset + 1) << 8 |
 				__raw_readb(ctrl_base + offset + 2) << 16;
 		} else {
+			if (i == 4) {
+				// We do not have an eFuse for OPP5.
+				// We have to calculate a rough approximation of the nValue for this OPP.
+				dev_data->volt_data[i].sr_nvalue = cal_opp5_nvalue(2025, 1750);
+			} else {
 			dev_data->volt_data[i].sr_nvalue = omap_ctrl_readl(
 				dev_data->efuse_nvalues_offs[i]);
+			}
 		}
 	}
 	if (cpu_is_omap44xx())
