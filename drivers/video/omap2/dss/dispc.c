@@ -2425,7 +2425,8 @@ static void _dispc_set_scaling_uv(enum omap_plane plane,
 	   _dispc_set_vid_accu2_1(plane, accuh, accu1); */
 }
 static void _dispc_set_rotation_attrs(enum omap_plane plane, u8 rotation,
-		bool mirroring, enum omap_color_mode color_mode)
+		bool mirroring, enum omap_color_mode color_mode,
+                enum omap_dss_rotation_type type)
 {
 	BUG_ON(plane == OMAP_DSS_WB);
 
@@ -2433,39 +2434,41 @@ static void _dispc_set_rotation_attrs(enum omap_plane plane, u8 rotation,
 			color_mode == OMAP_DSS_COLOR_UYVY) {
 		int vidrot = 0;
 
-//&*&*&*JJ1_20110628 for camera mirror issue
-#ifndef CONFIG_VIDEO_MT9V115
-		switch (rotation) {
-		case OMAP_DSS_ROT_0:
-			vidrot = 0;
-			break;
-		case OMAP_DSS_ROT_180:
-			vidrot = 2;
-			break;
-		case OMAP_DSS_ROT_90:
-			vidrot = mirroring ? 3 : 1;
-			break;
-		case OMAP_DSS_ROT_270:
-			vidrot = mirroring ? 1 : 3;
-			break;
-		}
-#else
-		switch (rotation) {
-		case OMAP_DSS_ROT_0:
-			vidrot = mirroring ? 2 : 0;
-			break;
-		case OMAP_DSS_ROT_180:
-			vidrot = mirroring ? 0 : 2;
-			break;
-		case OMAP_DSS_ROT_90:
-			vidrot = mirroring ? 3 : 1;
-			break;
-		case OMAP_DSS_ROT_270:
-			vidrot = mirroring ? 1 : 3;
-			break;
-		}
-#endif
-//&*&*&*JJ2_20110628 for camera mirror issue
+                if (mirroring) {
+                        switch (rotation) {
+                        case OMAP_DSS_ROT_0:
+                                vidrot = 2;
+                                break;
+                        case OMAP_DSS_ROT_180:
+                                vidrot = 1;
+                                break;
+                        case OMAP_DSS_ROT_90:
+                                vidrot = 0;
+                                break;
+                        case OMAP_DSS_ROT_270:
+                                vidrot = 3;
+                                break;
+                        }
+                }
+                else
+                {
+                        switch (rotation) {
+                        case OMAP_DSS_ROT_0:
+                                vidrot = 0;
+                                break;
+                        case OMAP_DSS_ROT_180:
+                                vidrot = 1;
+                                break;
+                        case OMAP_DSS_ROT_90:
+                                vidrot = 2;
+                                break;
+                        case OMAP_DSS_ROT_270:
+                                vidrot = 3;
+                                break;
+                        }
+                }
+
+                printk("mirroring: %d, rotation: %d, type: %d, vidrot: %d\n", mirroring, rotation, type, vidrot);
 
 		REG_FLD_MOD(dispc_reg_att[plane], vidrot, 13, 12);
 
@@ -2488,7 +2491,7 @@ static void _dispc_set_rotation_attrs(enum omap_plane plane, u8 rotation,
 	if (plane != OMAP_DSS_GFX) {
 		if (color_mode == OMAP_DSS_COLOR_NV12) {
 			/* DOUBLESTRIDE : 0 for 90-, 270-; 1 for 0- and 180- */
-			if (rotation == 1 || rotation == 3)
+			if ((rotation == 1 || rotation == 3) && type != OMAP_DSS_ROT_TILER)
 				REG_FLD_MOD(dispc_reg_att[plane], 0x0, 22, 22);
 			else
 				REG_FLD_MOD(dispc_reg_att[plane], 0x1, 22, 22);
@@ -3451,7 +3454,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
 		_dispc_enable_vid_color_conv(plane, cconv);
 	}
 
-	_dispc_set_rotation_attrs(plane, rotation, mirror, color_mode);
+	_dispc_set_rotation_attrs(plane, rotation, mirror, color_mode,
+                                                        rotation_type);
 
 	if ((plane != OMAP_DSS_VIDEO1) || (cpu_is_omap44xx()))
 		_dispc_setup_global_alpha(plane, global_alpha);
